@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusFlow - AI Productivity Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+
+    .modal-backdrop {
+      background-color: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(2px);
+    }
+
+    #task-notification {
+      animation: notification-in 180ms ease-out;
+    }
+
+    @keyframes notification-in {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-slate-900 selection:text-white">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-4">
+
+        <div class="flex items-center gap-8">
+          <div class="flex items-center gap-2.5">
+            <span class="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs font-bold tracking-wider shadow-sm">FF</span>
+            <span class="text-base font-semibold tracking-tight text-slate-900">FocusFlow</span>
+          </div>
+
+          <nav class="hidden md:flex items-center gap-1">
+            <a href="#dashboard" class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-900 bg-slate-100/90 transition flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[18px]">dashboard</span>
+              Dashboard
+            </a>
+
+            <a href="productivity.html" class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[18px]">monitoring</span>
+              Productivity
+            </a>
+          </nav>
+        </div>
+
+        <!-- Search -->
+        <div class="flex-1 max-w-md hidden sm:block">
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <span class="material-symbols-outlined text-[18px]">search</span>
+            </span>
+
+            <input
+              type="text"
+              id="global-search-input"
+              placeholder="Search active tasks..."
+              aria-label="Search tasks in the selected view"
+              class="w-full pl-9 pr-4 py-1.5 text-xs sm:text-sm text-slate-900 bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition"
+            />
+          </div>
+        </div>
+
+        <!-- Mobile Productivity Shortcut -->
+        <a href="productivity.html" class="md:hidden inline-flex shrink-0 items-center gap-1 rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition" aria-label="Open productivity overview">
+          <span class="material-symbols-outlined text-[18px]">monitoring</span>
+          <span>Productivity</span>
+        </a>
+
+        <!-- Profile Dropdown -->
+        <div id="user-profile-wrap" class="relative flex items-center">
+          <button
+            type="button"
+            id="user-profile-trigger"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="user-profile-menu"
+            class="flex items-center gap-2.5 pl-2 sm:border-l sm:border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
+          >
+            <span id="user-avatar" class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-semibold text-slate-800">
+              <span id="user-initials">U</span>
+            </span>
+
+            <span class="hidden lg:block text-left">
+              <span id="user-display-name" class="block text-xs font-semibold text-slate-900 leading-tight">Loading...</span>
+              <span class="block text-[11px] text-slate-500 leading-none mt-1">My account</span>
+            </span>
+
+            <span class="material-symbols-outlined text-[18px] text-slate-500">expand_more</span>
+          </button>
+
+          <div
+            id="user-profile-menu"
+            class="hidden absolute right-0 top-full mt-3 w-72 max-w-[calc(100vw-2rem)] bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden"
+            role="region"
+            aria-label="Your account details"
+          >
+            <div class="p-4 border-b border-slate-100">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 flex-shrink-0 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-semibold">
+                  <span id="profile-menu-initials">U</span>
+                </div>
+
+                <div class="min-w-0">
+                  <p id="profile-menu-name" class="text-sm font-semibold text-slate-900 break-words">Loading your profile...</p>
+                  <p id="profile-menu-email" class="text-xs text-slate-500 mt-1 break-all">Loading email...</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 space-y-3">
+              <div>
+                <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Account created</p>
+                <p id="profile-created-date" class="text-sm text-slate-700 mt-1">Loading...</p>
+              </div>
+
+              <p id="profile-load-error" class="hidden text-xs text-rose-600" role="alert"></p>
+            </div>
+
+            <div class="p-2 border-t border-slate-100">
+              <button type="button" id="profile-logout-button" class="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 transition text-left">
+                <span class="material-symbols-outlined text-[18px]">logout</span>
+                <span>Log out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Welcome -->
+    <section id="dashboard" class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/70">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Your focus, at a glance</h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Welcome back, <span id="welcome-username" class="font-medium text-slate-700">there</span>.
+          Organize your work and make time for what matters.
+        </p>
+      </div>
+
+      <button type="button" id="open-add-task-btn" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-medium text-sm rounded-lg transition duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        <span>Add Task</span>
+      </button>
+    </section>
+
+    <!-- Interactive Metric Cards -->
+    <section aria-label="Task metrics summary">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <button type="button" data-metric="total" aria-label="View all saved tasks"
+          class="w-full text-left bg-white border border-slate-200/80 rounded-xl p-5 shadow-xs hover:border-slate-400 hover:shadow-sm transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Tasks</span>
+            <span class="p-1.5 rounded-md bg-slate-100 text-slate-600"><span class="material-symbols-outlined text-[18px]">format_list_bulleted</span></span>
+          </div>
+          <div class="mt-3 flex items-baseline gap-2">
+            <span id="metric-total-tasks" class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">0</span>
+            <span class="text-xs text-slate-500">saved</span>
+          </div>
+          <p class="mt-3 text-xs text-slate-500 flex items-center gap-1">View task details <span class="material-symbols-outlined text-[15px]">arrow_forward</span></p>
+        </button>
+
+        <button type="button" data-metric="completed" aria-label="View completed tasks"
+          class="w-full text-left bg-white border border-slate-200/80 rounded-xl p-5 shadow-xs hover:border-emerald-300 hover:shadow-sm transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Completed</span>
+            <span class="p-1.5 rounded-md bg-emerald-50 text-emerald-700"><span class="material-symbols-outlined text-[18px]">check_circle</span></span>
+          </div>
+          <div class="mt-3 flex items-baseline gap-2">
+            <span id="metric-completed-tasks" class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">0</span>
+            <span id="metric-completion-rate" class="text-xs text-emerald-600 font-medium">0% rate</span>
+          </div>
+          <p class="mt-3 text-xs text-slate-500 flex items-center gap-1">View completed tasks <span class="material-symbols-outlined text-[15px]">arrow_forward</span></p>
+        </button>
+
+        <button type="button" data-metric="today" aria-label="View tasks due today"
+          class="w-full text-left bg-white border border-slate-200/80 rounded-xl p-5 shadow-xs hover:border-blue-300 hover:shadow-sm transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Due Today</span>
+            <span class="p-1.5 rounded-md bg-blue-50 text-blue-700"><span class="material-symbols-outlined text-[18px]">calendar_today</span></span>
+          </div>
+          <div class="mt-3 flex items-baseline gap-2">
+            <span id="metric-due-today" class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">0</span>
+            <span class="text-xs text-blue-600 font-medium">Actionable</span>
+          </div>
+          <p class="mt-3 text-xs text-slate-500 flex items-center gap-1">View today's tasks <span class="material-symbols-outlined text-[15px]">arrow_forward</span></p>
+        </button>
+
+        <button type="button" data-metric="overdue" aria-label="View overdue tasks"
+          class="w-full text-left bg-white border border-slate-200/80 rounded-xl p-5 shadow-xs hover:border-rose-300 hover:shadow-sm transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Overdue</span>
+            <span class="p-1.5 rounded-md bg-rose-50 text-rose-700"><span class="material-symbols-outlined text-[18px]">warning</span></span>
+          </div>
+          <div class="mt-3 flex items-baseline gap-2">
+            <span id="metric-overdue" class="text-2xl sm:text-3xl font-bold tracking-tight text-rose-700">0</span>
+            <span class="text-xs text-rose-600 font-medium">Requires attention</span>
+          </div>
+          <p class="mt-3 text-xs text-slate-500 flex items-center gap-1">Review overdue tasks <span class="material-symbols-outlined text-[15px]">arrow_forward</span></p>
+        </button>
+
+      </div>
+    </section>
+
+    <!-- Tasks and AI Planner -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+      <section class="lg:col-span-2 space-y-4" id="my-tasks" aria-label="My tasks list">
+        <div class="bg-white border border-slate-200/80 rounded-xl p-4 sm:p-5 shadow-xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+            <div>
+              <h2 class="text-lg font-semibold tracking-tight text-slate-900">My Tasks</h2>
+              <p class="text-xs text-slate-500">Manage active work and review completed tasks</p>
+            </div>
+
+            <div class="flex items-center gap-1 p-1 bg-slate-100/90 rounded-lg text-xs font-medium self-start sm:self-auto" role="tablist" aria-label="Task filters">
+              <button type="button" class="filter-tab active px-3 py-1.5 rounded-md bg-white text-slate-900 shadow-xs transition" data-filter="all" role="tab" aria-selected="true">Active Tasks</button>
+              <button type="button" class="filter-tab px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 transition" data-filter="today" role="tab" aria-selected="false">Today</button>
+              <button type="button" class="filter-tab px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 transition" data-filter="upcoming" role="tab" aria-selected="false">Upcoming</button>
+              <button type="button" class="filter-tab px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 transition" data-filter="completed" role="tab" aria-selected="false">Task History</button>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <ul id="task-list" class="divide-y divide-slate-100" role="list">
+              <li class="py-8 text-center text-sm text-slate-500">Loading your tasks...</li>
+            </ul>
+
+            <div id="tasks-empty-state" class="hidden text-center py-12 px-4">
+              <div class="w-12 h-12 mx-auto rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-3">
+                <span class="material-symbols-outlined text-[24px]">task</span>
+              </div>
+              <h3 id="tasks-empty-title" class="text-sm font-semibold text-slate-900">No tasks found</h3>
+              <p id="tasks-empty-description" class="text-xs text-slate-500 max-w-xs mx-auto mt-1">You have no tasks matching this filter.</p>
+              <button type="button" id="empty-add-task-btn" class="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-900 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg shadow-2xs transition">
+                <span class="material-symbols-outlined text-[16px]">add</span>
+                Create your first task
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+            <span>Saved tasks from your account</span>
+            <span>API: <code class="text-slate-600">/api/v1/tasks</code></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI Focus Planner -->
+      <section class="space-y-4" aria-label="AI Focus Planner">
+        <div class="bg-white border border-slate-200/80 rounded-xl p-5 shadow-xs">
+          <div class="flex items-start justify-between gap-3 mb-2">
+            <div>
+              <div class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-blue-700 mb-1">
+                <span class="material-symbols-outlined text-[16px]">auto_awesome</span>
+                AI Focus Planner
+              </div>
+              <p class="text-xs text-slate-500">Turn your goals into a clear, actionable plan.</p>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200/60">Beta</span>
+          </div>
+
+          <form id="ai-planner-form" class="mt-4 space-y-3.5">
+            <div>
+              <label for="ai-goals-input" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Today's Goal</label>
+              <textarea id="ai-goals-input" name="goals" rows="3" placeholder="What do you need to accomplish today?" class="w-full px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 bg-white border border-slate-300 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition resize-none"></textarea>
+            </div>
+
+            <div>
+              <label for="ai-time-available" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Time Available <span class="font-normal text-slate-400 lowercase">(optional)</span></label>
+              <div class="relative">
+                <input type="text" id="ai-time-available" name="time_available" placeholder="e.g., 2 hours, 45 minutes" class="w-full px-3.5 py-2 text-xs sm:text-sm text-slate-900 bg-white border border-slate-300 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition" />
+                <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400"><span class="material-symbols-outlined text-[16px]">schedule</span></span>
+              </div>
+            </div>
+
+            <button type="submit" id="ai-plan-submit-btn" class="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-medium text-xs sm:text-sm rounded-lg transition duration-150 shadow-xs flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2">
+              <span class="material-symbols-outlined text-[16px]">auto_awesome</span>
+              <span>Create my plan</span>
+            </button>
+          </form>
+
+          <div class="mt-5 pt-4 border-t border-slate-100">
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                Your AI Focus Plan
+              </span>
+              <span id="ai-plan-status" class="text-[11px] text-slate-500">
+                Ready
+              </span>
+            </div>
+
+            <div
+              id="ai-plan-output"
+              class="bg-slate-50 border border-slate-200/70 rounded-lg p-3.5 text-sm text-slate-700 leading-relaxed whitespace-pre-wrap break-words"
+              role="status"
+              aria-live="polite"
+            >Enter your goal above and select "Create my plan" to get personalized recommendations.</div>
+
+            <p class="text-[11px] text-slate-400 mt-2.5 leading-normal">
+              AI-generated suggestions are advisory. Your saved tasks will only change when you choose an action.
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Add Task Modal -->
+  <div id="add-task-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div id="modal-backdrop" class="fixed inset-0 modal-backdrop transition-opacity"></div>
+
+    <div class="relative w-full max-w-lg bg-white border border-slate-200/80 rounded-2xl shadow-xl p-6 sm:p-7 z-10 overflow-hidden">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div>
+          <h3 id="modal-title" class="text-lg font-bold tracking-tight text-slate-900">Create New Task</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Add details for your upcoming task or assignment.</p>
+        </div>
+        <button type="button" id="close-modal-x-btn" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition focus:outline-none" aria-label="Close modal">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <form id="create-task-form" novalidate class="mt-5 space-y-4">
+        <div id="modal-form-alert" class="hidden p-3 rounded-lg text-xs leading-relaxed bg-rose-50 text-rose-800 border border-rose-200" role="alert"></div>
+
+        <div>
+          <label for="task-title-input" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Task Title <span class="text-rose-600">*</span></label>
+          <input type="text" id="task-title-input" name="title" required maxlength="200" placeholder="e.g., Implement PostgreSQL session storage" class="w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition" />
+          <p id="task-title-error" class="hidden mt-1.5 text-xs text-rose-600">Please provide a task title.</p>
+        </div>
+
+        <div>
+          <label for="task-desc-input" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Description <span class="font-normal text-slate-400 lowercase">(optional)</span></label>
+          <textarea id="task-desc-input" name="description" rows="3" maxlength="5000" placeholder="Add context, acceptance criteria, or relevant links..." class="w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition resize-none"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="task-due-date-input" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Due Date</label>
+            <input type="date" id="task-due-date-input" name="due_date" class="w-full px-3.5 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition" />
+          </div>
+
+          <div>
+            <label for="task-priority-select" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Priority</label>
+            <select id="task-priority-select" name="priority" class="w-full px-3.5 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition">
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+          <button type="button" id="cancel-modal-btn" class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg transition">Cancel</button>
+          <button type="submit" id="create-task-submit-btn" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-medium text-sm rounded-lg transition duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">add_task</span>
+            <span>Create Task</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Completion Confirmation Modal -->
+  <div id="completion-confirm-modal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="completion-confirm-title" aria-describedby="completion-confirm-description">
+    <div id="completion-confirm-backdrop" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+
+    <div class="relative z-10 w-full max-w-sm rounded-2xl bg-white border border-slate-200 shadow-xl p-6">
+      <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center mb-4">
+        <span class="material-symbols-outlined text-[26px]">task_alt</span>
+      </div>
+
+      <h2 id="completion-confirm-title" class="text-lg font-semibold tracking-tight text-slate-900">Complete this task?</h2>
+      <p id="completion-confirm-description" class="text-sm text-slate-500 mt-2 leading-relaxed">Are you sure you have finished this task? It will move to your Task History.</p>
+
+      <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+        <p class="text-xs text-slate-500 mb-1">Task to complete</p>
+        <p id="completion-confirm-task" class="text-sm font-medium text-slate-900 break-words"></p>
+      </div>
+
+      <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 mt-6">
+        <button type="button" id="completion-cancel-btn" class="w-full sm:w-auto px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition">Cancel</button>
+        <button type="button" id="completion-confirm-btn" class="w-full sm:w-auto px-4 py-2.5 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[18px]">check_circle</span>
+          Confirm completion
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Metric Details Modal -->
+  <div id="metric-details-modal" class="fixed inset-0 z-[70] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="metric-details-title" aria-describedby="metric-details-subtitle">
+    <div id="metric-details-backdrop" class="absolute inset-0 modal-backdrop"></div>
+
+    <div class="relative z-10 w-full max-w-xl max-h-[85vh] bg-white border border-slate-200 rounded-2xl shadow-xl flex flex-col overflow-hidden">
+      <div class="flex items-start justify-between gap-4 p-5 sm:p-6 border-b border-slate-100">
+        <div>
+          <h2 id="metric-details-title" class="text-lg sm:text-xl font-bold tracking-tight text-slate-900">Task Details</h2>
+          <p id="metric-details-subtitle" class="text-xs sm:text-sm text-slate-500 mt-1">Tasks from your account</p>
+        </div>
+
+        <button type="button" id="metric-details-close" class="flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition focus:outline-none focus:ring-2 focus:ring-slate-900" aria-label="Close task details">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <ul id="metric-details-list" class="p-4 sm:p-5 divide-y divide-slate-100 overflow-y-auto" aria-live="polite"></ul>
+
+      <div class="p-4 border-t border-slate-100 flex items-center justify-between gap-3">
+        <p class="text-xs text-slate-400">Based on your saved tasks</p>
+        <button type="button" id="metric-details-done" class="px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-slate-200/60 bg-white py-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
+      <div class="flex items-center gap-2">
+        <span class="w-4 h-4 rounded bg-slate-900 text-white flex items-center justify-center text-[9px] font-bold">FF</span>
+        <span>FocusFlow &copy; 2026. All rights reserved.</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-[14px]">lock</span>
+        <span>FastAPI & PostgreSQL</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Main Dashboard JavaScript -->
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const API_BASE = 'http://127.0.0.1:8000/api/v1';
+
+    const modal = document.getElementById('add-task-modal');
+    const openBtn = document.getElementById('open-add-task-btn');
+    const emptyAddBtn = document.getElementById('empty-add-task-btn');
+    const closeXBtn = document.getElementById('close-modal-x-btn');
+    const cancelBtn = document.getElementById('cancel-modal-btn');
+    const modalBackdrop = document.getElementById('modal-backdrop');
+
+    const taskForm = document.getElementById('create-task-form');
+    const titleInput = document.getElementById('task-title-input');
+    const descriptionInput = document.getElementById('task-desc-input');
+    const dueDateInput = document.getElementById('task-due-date-input');
+    const priorityInput = document.getElementById('task-priority-select');
+    const titleError = document.getElementById('task-title-error');
+    const modalAlert = document.getElementById('modal-form-alert');
+
+    const taskList = document.getElementById('task-list');
+    const emptyState = document.getElementById('tasks-empty-state');
+    const emptyTitle = document.getElementById('tasks-empty-title');
+    const emptyDescription = document.getElementById('tasks-empty-description');
+    const searchInput = document.getElementById('global-search-input');
+    const filterTabs = document.querySelectorAll('.filter-tab');
+
+    const totalCountEl = document.getElementById('metric-total-tasks');
+    const completedCountEl = document.getElementById('metric-completed-tasks');
+    const completionRateEl = document.getElementById('metric-completion-rate');
+    const dueTodayEl = document.getElementById('metric-due-today');
+    const overdueEl = document.getElementById('metric-overdue');
+
+    // Metric modal elements.
+    const metricDetailsModal = document.getElementById('metric-details-modal');
+    const metricDetailsBackdrop = document.getElementById('metric-details-backdrop');
+    const metricDetailsClose = document.getElementById('metric-details-close');
+    const metricDetailsDone = document.getElementById('metric-details-done');
+    const metricDetailsTitle = document.getElementById('metric-details-title');
+    const metricDetailsSubtitle = document.getElementById('metric-details-subtitle');
+    const metricDetailsList = document.getElementById('metric-details-list');
+
+    let allTasks = [];
+    let activeFilter = 'all';
+    let activeSearchTerm = '';
+    let historySearchTerm = '';
+    let notificationTimer = null;
+
+    // Confirmation before completing a task.
+    function confirmTaskCompletion(taskTitle) {
+      return new Promise(resolve => {
+        const confirmModal = document.getElementById('completion-confirm-modal');
+        const backdrop = document.getElementById('completion-confirm-backdrop');
+        const taskName = document.getElementById('completion-confirm-task');
+        const cancelButton = document.getElementById('completion-cancel-btn');
+        const confirmButton = document.getElementById('completion-confirm-btn');
+
+        taskName.textContent = taskTitle;
+
+        const previousOverflow = document.body.style.overflow;
+        let finished = false;
+
+        function finish(confirmed) {
+          if (finished) return;
+          finished = true;
+
+          confirmModal.classList.add('hidden');
+          confirmModal.classList.remove('flex');
+          document.body.style.overflow = previousOverflow;
+
+          cancelButton.removeEventListener('click', cancel);
+          confirmButton.removeEventListener('click', confirm);
+          backdrop.removeEventListener('click', handleBackdrop);
+          document.removeEventListener('keydown', handleKeydown);
+
+          resolve(confirmed);
+        }
+
+        function confirm() { finish(true); }
+        function cancel() { finish(false); }
+
+        function handleBackdrop(event) {
+          if (event.target === backdrop) cancel();
+        }
+
+        function handleKeydown(event) {
+          if (event.key === 'Escape') cancel();
+        }
+
+        cancelButton.addEventListener('click', cancel);
+        confirmButton.addEventListener('click', confirm);
+        backdrop.addEventListener('click', handleBackdrop);
+        document.addEventListener('keydown', handleKeydown);
+
+        document.body.style.overflow = 'hidden';
+        confirmModal.classList.remove('hidden');
+        confirmModal.classList.add('flex');
+        cancelButton.focus();
+      });
+    }
+
+    function showTaskNotification(message, type = 'success') {
+      let notification = document.getElementById('task-notification');
+
+      if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'task-notification';
+        notification.className = 'fixed top-5 right-5 z-[9999] rounded-lg border px-4 py-3 text-sm font-medium shadow-lg max-w-[calc(100vw-40px)]';
+        notification.setAttribute('aria-live', 'polite');
+        document.body.appendChild(notification);
+      }
+
+      notification.textContent = message;
+      notification.setAttribute('role', type === 'error' ? 'alert' : 'status');
+
+      notification.classList.remove(
+        'bg-emerald-50', 'text-emerald-800', 'border-emerald-200',
+        'bg-rose-50', 'text-rose-800', 'border-rose-200'
+      );
+
+      if (type === 'error') {
+        notification.classList.add('bg-rose-50', 'text-rose-800', 'border-rose-200');
+      } else {
+        notification.classList.add('bg-emerald-50', 'text-emerald-800', 'border-emerald-200');
+      }
+
+      notification.hidden = false;
+      clearTimeout(notificationTimer);
+      notificationTimer = setTimeout(() => {
+        notification.hidden = true;
+      }, 3500);
+    }
+
+    function syncSearchInputWithView() {
+      if (!searchInput) return;
+
+      if (activeFilter === 'completed') {
+        searchInput.value = historySearchTerm;
+        searchInput.placeholder = 'Search completed tasks...';
+      } else {
+        searchInput.value = activeSearchTerm;
+        searchInput.placeholder = 'Search active tasks...';
+      }
+    }
+
+    function getTodayString() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      }[character]));
+    }
+
+    function getTaskCategory(task) {
+      if (task.completed) return 'completed';
+      if (!task.due_date) return 'upcoming';
+
+      const today = getTodayString();
+
+      if (task.due_date < today) return 'overdue';
+      if (task.due_date === today) return 'today';
+
+      return 'upcoming';
+    }
+
+    function formatDueDate(dateString) {
+      if (!dateString) return 'No due date';
+
+      const date = new Date(`${dateString}T00:00:00`);
+      if (Number.isNaN(date.getTime())) return dateString;
+
+      return date.toLocaleDateString(undefined, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+
+    function formatCompletedAt(timestamp) {
+      if (!timestamp) return 'Completion date unavailable';
+
+      const date = new Date(timestamp);
+      if (Number.isNaN(date.getTime())) return 'Completion date unavailable';
+
+      return date.toLocaleString(undefined, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    }
+
+    // ----------------------------
+    // Interactive dashboard metrics
+    // ----------------------------
+
+    function getTasksForMetric(metricType) {
+      const today = getTodayString();
+
+      switch (metricType) {
+        case 'total':
+          return allTasks;
+
+        case 'completed':
+          return allTasks.filter(task => Boolean(task.completed));
+
+        case 'today':
+          return allTasks.filter(task =>
+            !task.completed && task.due_date === today
+          );
+
+        case 'overdue':
+          return allTasks.filter(task =>
+            !task.completed && task.due_date && task.due_date < today
+          );
+
+        default:
+          return [];
+      }
+    }
+
+    function closeMetricDetails() {
+      if (!metricDetailsModal) return;
+
+      metricDetailsModal.classList.add('hidden');
+      metricDetailsModal.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+
+    function showMetricEmptyState(message) {
+      const item = document.createElement('li');
+      item.className = 'py-10 text-center text-sm text-slate-500';
+      item.textContent = message;
+      metricDetailsList.appendChild(item);
+    }
+
+    function createMetricTaskItem(task) {
+      const item = document.createElement('li');
+      item.className = 'py-4 first:pt-1 last:pb-1';
+
+      const mainRow = document.createElement('div');
+      mainRow.className = 'flex items-start justify-between gap-3';
+
+      const details = document.createElement('div');
+      details.className = 'min-w-0 flex-1';
+
+      const title = document.createElement('p');
+      title.className = 'text-sm font-semibold text-slate-900 break-words';
+      title.textContent = task.title || 'Untitled task';
+      details.appendChild(title);
+
+      if (task.description) {
+        const description = document.createElement('p');
+        description.className = 'mt-1 text-xs text-slate-500 break-words';
+        description.textContent = task.description;
+        details.appendChild(description);
+      }
+
+      const category = getTaskCategory(task);
+      let dateText = 'No due date';
+
+      if (task.completed) {
+        dateText = `Completed ${formatCompletedAt(task.completed_at)}`;
+      } else if (category === 'overdue') {
+        dateText = `Overdue · ${formatDueDate(task.due_date)}`;
+      } else if (category === 'today') {
+        dateText = `Due today · ${formatDueDate(task.due_date)}`;
+      } else if (task.due_date) {
+        dateText = `Due ${formatDueDate(task.due_date)}`;
+      }
+
+      const dateElement = document.createElement('p');
+      dateElement.className = 'mt-2 flex items-center gap-1 text-xs text-slate-500';
+
+      const dateIcon = document.createElement('span');
+      dateIcon.className = 'material-symbols-outlined text-[15px]';
+      dateIcon.textContent = 'schedule';
+
+      const dateLabel = document.createElement('span');
+      dateLabel.textContent = dateText;
+
+      dateElement.append(dateIcon, dateLabel);
+      details.appendChild(dateElement);
+
+      const badges = document.createElement('div');
+      badges.className = 'flex flex-col items-end gap-2 flex-shrink-0';
+
+      const priorityClasses = {
+        High: 'bg-rose-50 text-rose-700 border-rose-200',
+        Medium: 'bg-amber-50 text-amber-700 border-amber-200',
+        Low: 'bg-slate-100 text-slate-700 border-slate-200'
+      };
+
+      const priority = task.priority || 'Medium';
+      const priorityBadge = document.createElement('span');
+      priorityBadge.className =
+        'inline-flex px-2 py-1 rounded-md border text-[11px] font-medium ' +
+        (priorityClasses[priority] || priorityClasses.Medium);
+      priorityBadge.textContent = priority;
+      badges.appendChild(priorityBadge);
+
+      const statusBadge = document.createElement('span');
+
+      if (task.completed) {
+        statusBadge.className = 'text-[11px] font-medium text-emerald-700';
+        statusBadge.textContent = 'Completed';
+      } else if (category === 'overdue') {
+        statusBadge.className = 'text-[11px] font-medium text-rose-700';
+        statusBadge.textContent = 'Overdue';
+      } else if (category === 'today') {
+        statusBadge.className = 'text-[11px] font-medium text-blue-700';
+        statusBadge.textContent = 'Due today';
+      } else {
+        statusBadge.className = 'text-[11px] font-medium text-slate-500';
+        statusBadge.textContent = 'Active';
+      }
+
+      badges.appendChild(statusBadge);
+      mainRow.append(details, badges);
+      item.appendChild(mainRow);
+
+      return item;
+    }
+
+    function openMetricDetails(metricType) {
+      const config = {
+        total: {
+          title: 'All Tasks',
+          description: 'All tasks saved to your account.',
+          empty: 'No tasks have been created yet.'
+        },
+        completed: {
+          title: 'Completed Tasks',
+          description: 'Tasks you have finished, with their completion dates.',
+          empty: 'You have not completed any tasks yet.'
+        },
+        today: {
+          title: 'Tasks Due Today',
+          description: 'Unfinished tasks that are due today.',
+          empty: 'You have no unfinished tasks due today.'
+        },
+        overdue: {
+          title: 'Overdue Tasks',
+          description: 'Unfinished tasks whose due dates have passed.',
+          empty: 'Great! You have no overdue tasks.'
+        }
+      }[metricType];
+
+      if (!config || !metricDetailsModal) return;
+
+      const matchingTasks = getTasksForMetric(metricType);
+
+      metricDetailsTitle.textContent = config.title;
+      metricDetailsSubtitle.textContent =
+        `${matchingTasks.length} task${matchingTasks.length === 1 ? '' : 's'} · ${config.description}`;
+
+      metricDetailsList.innerHTML = '';
+
+      if (matchingTasks.length === 0) {
+        showMetricEmptyState(config.empty);
+      } else {
+        matchingTasks.forEach(task => {
+          metricDetailsList.appendChild(createMetricTaskItem(task));
+        });
+      }
+
+      metricDetailsModal.classList.remove('hidden');
+      metricDetailsModal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      metricDetailsClose.focus();
+    }
+
+    document.querySelectorAll('[data-metric]').forEach(card => {
+      card.addEventListener('click', () => {
+        openMetricDetails(card.dataset.metric);
+      });
+    });
+
+    if (metricDetailsClose) {
+      metricDetailsClose.addEventListener('click', closeMetricDetails);
+    }
+
+    if (metricDetailsDone) {
+      metricDetailsDone.addEventListener('click', closeMetricDetails);
+    }
+
+    if (metricDetailsBackdrop) {
+      metricDetailsBackdrop.addEventListener('click', event => {
+        if (event.target === metricDetailsBackdrop) closeMetricDetails();
+      });
+    }
+
+    document.addEventListener('keydown', event => {
+      if (
+        event.key === 'Escape' &&
+        metricDetailsModal &&
+        !metricDetailsModal.classList.contains('hidden')
+      ) {
+        closeMetricDetails();
+      }
+    });
+
+    // Add Task modal.
+    function openModal() {
+      modal.classList.remove('hidden');
+      taskForm.reset();
+      titleError.classList.add('hidden');
+      modalAlert.classList.add('hidden');
+      titleInput.classList.remove('border-rose-500');
+      titleInput.focus();
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    if (openBtn) openBtn.addEventListener('click', openModal);
+    if (emptyAddBtn) emptyAddBtn.addEventListener('click', openModal);
+    if (closeXBtn) closeXBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    if (modalBackdrop) modalBackdrop.addEventListener('click', closeModal);
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+        closeModal();
+      }
+    });
+
+    function showModalError(message) {
+      modalAlert.textContent = message;
+      modalAlert.classList.remove('hidden');
+    }
+
+    // Build one task row.
+    function createTaskRow(task) {
+      const row = document.createElement('li');
+      const category = getTaskCategory(task);
+      const completed = Boolean(task.completed);
+
+      row.className = 'task-row py-3.5 flex items-start sm:items-center justify-between gap-3 group';
+      if (completed) row.classList.add('opacity-70');
+
+      row.dataset.taskId = task.id;
+      row.dataset.category = category;
+      row.dataset.completed = String(completed);
+
+      const priorityColors = {
+        High: 'bg-rose-50 text-rose-700 border-rose-200/60',
+        Medium: 'bg-amber-50 text-amber-700 border-amber-200/60',
+        Low: 'bg-slate-100 text-slate-700 border-slate-200'
+      };
+
+      const priorityClass = priorityColors[task.priority] || priorityColors.Medium;
+
+      let statusText = 'Pending';
+      let statusClass = 'text-slate-400';
+      let dateLabel = task.due_date
+        ? `Due ${formatDueDate(task.due_date)}`
+        : 'No due date';
+
+      if (completed) {
+        statusText = 'Done';
+        statusClass = 'text-emerald-600';
+        dateLabel = `Completed ${formatCompletedAt(task.completed_at)}`;
+      } else if (category === 'overdue') {
+        dateLabel = `Overdue · ${formatDueDate(task.due_date)}`;
+      } else if (category === 'today') {
+        dateLabel = `Due today · ${formatDueDate(task.due_date)}`;
+      }
+
+      row.innerHTML = `
+        <div class="flex items-start sm:items-center gap-3 min-w-0">
+          <input type="checkbox" class="task-checkbox mt-1 sm:mt-0 w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer" aria-label="${completed ? 'Reopen' : 'Complete'} task: ${escapeHTML(task.title)}" ${completed ? 'checked' : ''} />
+          <div class="min-w-0">
+            <p class="task-title text-sm font-medium ${completed ? 'text-slate-500 line-through' : 'text-slate-900'} break-words">${escapeHTML(task.title)}</p>
+            ${task.description ? `<p class="text-xs text-slate-500 mt-1 break-words">${escapeHTML(task.description)}</p>` : ''}
+            <p class="text-xs text-slate-500 flex items-center gap-1 mt-1">
+              <span class="material-symbols-outlined text-[14px]">schedule</span>
+              <span>${escapeHTML(dateLabel)}</span>
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${priorityClass}">${escapeHTML(task.priority || 'Medium')}</span>
+          <span class="text-xs ${statusClass} hidden sm:inline">${statusText}</span>
+        </div>
+      `;
+
+      const checkbox = row.querySelector('.task-checkbox');
+
+      checkbox.addEventListener('change', async event => {
+        const changedCheckbox = event.currentTarget;
+        const requestedStatus = changedCheckbox.checked;
+        changedCheckbox.disabled = true;
+
+        try {
+          if (requestedStatus) {
+            const confirmed = await confirmTaskCompletion(task.title);
+
+            if (!confirmed) {
+              changedCheckbox.checked = Boolean(task.completed);
+              return;
+            }
+          }
+
+          const response = await fetch(`${API_BASE}/tasks/${task.id}/completion`, {
+            method: 'PATCH',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({ completed: requestedStatus })
+          });
+
+          const data = await response.json().catch(() => ({}));
+
+          if (response.status === 401) {
+            window.location.replace('http://127.0.0.1:5500/index.html');
+            return;
+          }
+
+          if (!response.ok) {
+            throw new Error(typeof data.detail === 'string'
+              ? data.detail
+              : 'Could not update the task. Please try again.');
+          }
+
+          if (!data.task) {
+            throw new Error('The server did not return the updated task.');
+          }
+
+          const taskIndex = allTasks.findIndex(
+            item => Number(item.id) === Number(data.task.id)
+          );
+
+          if (taskIndex !== -1) {
+            allTasks[taskIndex] = {
+              ...allTasks[taskIndex],
+              ...data.task,
+              completed: Boolean(data.task.completed)
+            };
+          }
+
+          renderTasks();
+
+          showTaskNotification(
+            requestedStatus
+              ? 'Task completed successfully and saved to Task History.'
+              : 'Task reopened successfully and returned to Active Tasks.',
+            'success'
+          );
+
+        } catch (error) {
+          console.error('Could not update task completion:', error);
+          renderTasks();
+          showTaskNotification(
+            error.message || 'Could not save the task status. Please try again.',
+            'error'
+          );
+        } finally {
+          changedCheckbox.disabled = false;
+        }
+      });
+
+      return row;
+    }
+
+    function renderTasks() {
+      taskList.innerHTML = '';
+      allTasks.forEach(task => taskList.appendChild(createTaskRow(task)));
+      applyFilters();
+      updateMetrics();
+    }
+
+    function applyFilters() {
+      const rows = taskList.querySelectorAll('.task-row');
+      let visibleCount = 0;
+
+      const currentSearchTerm = activeFilter === 'completed'
+        ? historySearchTerm
+        : activeSearchTerm;
+
+      rows.forEach(row => {
+        const taskId = Number(row.dataset.taskId);
+        const task = allTasks.find(item => Number(item.id) === taskId);
+
+        if (!task) {
+          row.classList.add('hidden');
+          return;
+        }
+
+        const category = getTaskCategory(task);
+
+        const matchesFilter =
+          (activeFilter === 'all' && !task.completed) ||
+          (activeFilter === 'completed' && task.completed) ||
+          (activeFilter === 'today' && !task.completed && category === 'today') ||
+          (activeFilter === 'upcoming' && !task.completed && category === 'upcoming');
+
+        const searchableText = [
+          task.title,
+          task.description,
+          task.priority,
+          task.due_date,
+          task.due_date ? formatDueDate(task.due_date) : '',
+          task.completed_at,
+          task.completed_at ? formatCompletedAt(task.completed_at) : ''
+        ].join(' ').toLowerCase();
+
+        const visible = matchesFilter && searchableText.includes(currentSearchTerm);
+        row.classList.toggle('hidden', !visible);
+
+        if (visible) visibleCount++;
+      });
+
+      const isEmpty = visibleCount === 0;
+      emptyState.classList.toggle('hidden', !isEmpty);
+
+      if (!isEmpty) return;
+
+      if (currentSearchTerm) {
+        emptyTitle.textContent = 'No matching tasks';
+        emptyDescription.textContent = activeFilter === 'completed'
+          ? 'No completed tasks match your search.'
+          : 'No active tasks match your search.';
+        emptyAddBtn.classList.add('hidden');
+        return;
+      }
+
+      if (activeFilter === 'completed') {
+        emptyTitle.textContent = 'No completed tasks yet';
+        emptyDescription.textContent = 'Tasks you finish will appear here with their completion dates.';
+        emptyAddBtn.classList.add('hidden');
+        return;
+      }
+
+      if (activeFilter === 'all' && allTasks.length === 0) {
+        emptyTitle.textContent = 'No tasks yet';
+        emptyDescription.textContent = 'Create your first task to start organizing your work.';
+        emptyAddBtn.classList.remove('hidden');
+        return;
+      }
+
+      emptyTitle.textContent = 'No active tasks found';
+      emptyDescription.textContent = 'No unfinished tasks match the selected filter.';
+      emptyAddBtn.classList.remove('hidden');
+    }
+
+    function updateProductivityOverview() {
+      const total = allTasks.length;
+      const completed = allTasks.filter(task => Boolean(task.completed)).length;
+      const openTasks = allTasks.filter(task => !task.completed);
+      const openCount = openTasks.length;
+      const completionRate = total ? Math.round((completed / total) * 100) : 0;
+      const circumference = 2 * Math.PI * 44;
+      const ring = document.getElementById('productivity-completion-ring');
+      const rateElement = document.getElementById('productivity-completion-rate');
+      const completedElement = document.getElementById('productivity-completed-count');
+      const openElement = document.getElementById('productivity-open-count');
+      const completionCaption = document.getElementById('productivity-completion-caption');
+
+      if (ring) ring.setAttribute('stroke-dasharray', `${(completionRate / 100) * circumference} ${circumference}`);
+      if (rateElement) rateElement.textContent = `${completionRate}%`;
+      if (completedElement) completedElement.textContent = String(completed);
+      if (openElement) openElement.textContent = String(openCount);
+      if (completionCaption) {
+        completionCaption.textContent = total === 0
+          ? 'Create your first task to start tracking progress.'
+          : completed === total
+            ? 'All saved tasks are complete. Great work!'
+            : `${openCount} task${openCount === 1 ? '' : 's'} remaining across your workload.`;
+      }
+
+      const priorities = {
+        High: openTasks.filter(task => task.priority === 'High').length,
+        Medium: openTasks.filter(task => !task.priority || task.priority === 'Medium').length,
+        Low: openTasks.filter(task => task.priority === 'Low').length
+      };
+      const priorityTotal = priorities.High + priorities.Medium + priorities.Low;
+      [['High', 'priority-high-count', 'priority-high-bar'], ['Medium', 'priority-medium-count', 'priority-medium-bar'], ['Low', 'priority-low-count', 'priority-low-bar']].forEach(([priority, countId, barId]) => {
+        const countElement = document.getElementById(countId);
+        const barElement = document.getElementById(barId);
+        const count = priorities[priority];
+        if (countElement) countElement.textContent = String(count);
+        if (barElement) barElement.style.width = `${priorityTotal ? (count / priorityTotal) * 100 : 0}%`;
+      });
+      const priorityCaption = document.getElementById('priority-chart-caption');
+      if (priorityCaption) priorityCaption.textContent = priorityTotal === 0
+        ? 'No unfinished tasks yet. Add a task to see your priority distribution.'
+        : `${priorityTotal} active task${priorityTotal === 1 ? '' : 's'} across all priority levels.`;
+    }
+
+    function updateMetrics() {
+      const total = allTasks.length;
+      const completed = allTasks.filter(task => task.completed).length;
+      const today = getTodayString();
+
+      const dueToday = allTasks.filter(task =>
+        !task.completed && task.due_date === today
+      ).length;
+
+      const overdue = allTasks.filter(task =>
+        !task.completed && task.due_date && task.due_date < today
+      ).length;
+
+      totalCountEl.textContent = total;
+      completedCountEl.textContent = completed;
+
+      const rate = total === 0 ? 0 : Math.round((completed / total) * 100);
+      completionRateEl.textContent = `${rate}% rate`;
+
+      dueTodayEl.textContent = dueToday;
+      overdueEl.textContent = overdue;
+      updateProductivityOverview();
+    }
+
+    async function loadTasks() {
+      taskList.innerHTML = '<li class="py-8 text-center text-sm text-slate-500">Loading your tasks...</li>';
+
+      try {
+        const response = await fetch(`${API_BASE}/tasks`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (response.status === 401) {
+          window.location.replace('http://127.0.0.1:5500/index.html');
+          return;
+        }
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(typeof data.detail === 'string'
+            ? data.detail
+            : 'Could not load your tasks.');
+        }
+
+        allTasks = Array.isArray(data.tasks)
+          ? data.tasks.map(task => ({ ...task, completed: Boolean(task.completed) }))
+          : [];
+
+        renderTasks();
+        refreshActionPlan();
+
+      } catch (error) {
+        console.error('Could not load tasks:', error);
+        taskList.innerHTML = '';
+
+        const errorRow = document.createElement('li');
+        errorRow.className = 'py-8 text-center text-sm text-rose-600';
+        errorRow.textContent = 'Could not load your tasks. Check that the backend is running, then refresh the page.';
+
+        taskList.appendChild(errorRow);
+        emptyState.classList.add('hidden');
+      }
+    }
+
+    taskForm.addEventListener('submit', async event => {
+      event.preventDefault();
+
+      const title = titleInput.value.trim();
+      const description = descriptionInput.value.trim();
+      const dueDate = dueDateInput.value;
+      const priority = priorityInput.value;
+
+      if (!title) {
+        titleError.classList.remove('hidden');
+        titleInput.classList.add('border-rose-500');
+        titleInput.focus();
+        return;
+      }
+
+      titleError.classList.add('hidden');
+      titleInput.classList.remove('border-rose-500');
+      modalAlert.classList.add('hidden');
+
+      const submitButton = document.getElementById('create-task-submit-btn');
+      const originalButtonHTML = submitButton.innerHTML;
+
+      submitButton.disabled = true;
+      submitButton.classList.add('opacity-70', 'cursor-not-allowed');
+      submitButton.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">refresh</span><span>Saving...</span>';
+
+      try {
+        const response = await fetch(`${API_BASE}/tasks`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            title,
+            description: description || null,
+            due_date: dueDate || null,
+            priority
+          })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (response.status === 401) {
+          window.location.replace('http://127.0.0.1:5500/index.html');
+          return;
+        }
+
+        if (!response.ok) {
+          let message = 'Could not save this task. Please try again.';
+
+          if (typeof data.detail === 'string') {
+            message = data.detail;
+          } else if (Array.isArray(data.detail)) {
+            message = data.detail.map(item => item.msg || 'Please check your task details.').join(' ');
+          }
+
+          throw new Error(message);
+        }
+
+        allTasks.unshift({ ...data, completed: Boolean(data.completed) });
+
+        activeFilter = 'all';
+        activeSearchTerm = '';
+
+        filterTabs.forEach(tab => {
+          const selected = tab.dataset.filter === 'all';
+
+          tab.classList.toggle('active', selected);
+          tab.classList.toggle('bg-white', selected);
+          tab.classList.toggle('text-slate-900', selected);
+          tab.classList.toggle('shadow-xs', selected);
+          tab.classList.toggle('text-slate-600', !selected);
+          tab.setAttribute('aria-selected', String(selected));
+        });
+
+        syncSearchInputWithView();
+        renderTasks();
+        closeModal();
+        showTaskNotification('Task created successfully and saved.', 'success');
+
+      } catch (error) {
+        console.error('Could not create task:', error);
+        showModalError(error.message || 'Could not save this task.');
+      } finally {
+        submitButton.disabled = false;
+        submitButton.classList.remove('opacity-70', 'cursor-not-allowed');
+        submitButton.innerHTML = originalButtonHTML;
+      }
+    });
+
+    titleInput.addEventListener('input', () => {
+      if (titleInput.value.trim()) {
+        titleError.classList.add('hidden');
+        titleInput.classList.remove('border-rose-500');
+      }
+    });
+
+    filterTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        activeFilter = tab.dataset.filter;
+        syncSearchInputWithView();
+
+        filterTabs.forEach(item => {
+          const selected = item === tab;
+
+          item.classList.toggle('active', selected);
+          item.classList.toggle('bg-white', selected);
+          item.classList.toggle('text-slate-900', selected);
+          item.classList.toggle('shadow-xs', selected);
+          item.classList.toggle('text-slate-600', !selected);
+          item.setAttribute('aria-selected', String(selected));
+        });
+
+        applyFilters();
+      });
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', event => {
+        const query = event.target.value.toLowerCase().trim();
+
+        if (activeFilter === 'completed') {
+          historySearchTerm = query;
+        } else {
+          activeSearchTerm = query;
+        }
+
+        applyFilters();
+      });
+    }
+
+    // Dashboard AI Action Plan: same authenticated endpoint; reads tasks only.
+    const actionPlanButton = document.getElementById('refresh-action-plan-btn');
+    const actionPlanOutput = document.getElementById('action-plan-output');
+    const actionPlanStatus = document.getElementById('action-plan-status');
+    const actionPlanTaskCount = document.getElementById('action-plan-task-count');
+
+    async function refreshActionPlan() {
+      if (!actionPlanButton || !actionPlanOutput || !actionPlanStatus) return;
+      const originalButtonHTML = actionPlanButton.innerHTML;
+      actionPlanButton.disabled = true;
+      actionPlanButton.classList.add('opacity-60', 'cursor-not-allowed');
+      actionPlanButton.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">refresh</span><span>Planning...</span>';
+      actionPlanStatus.textContent = 'Working...';
+      actionPlanOutput.textContent = 'Gemini is reviewing your unfinished tasks and preparing a practical order of action.';
+
+      try {
+        const response = await fetch(`${API_BASE}/ai/focus-plan`, {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            goal: 'Review my saved incomplete tasks and recommend the most important next actions for today. Prioritize overdue tasks first, then tasks due today and high-priority tasks. Give me a concise, realistic action plan in a clear order. Do not invent tasks that are not in my task list.',
+            time_available: 120
+          })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) { window.location.replace('http://127.0.0.1:5500/index.html'); return; }
+        if (!response.ok) {
+          let message = typeof data.detail === 'string' ? data.detail : 'Could not generate an action plan. Please try again.';
+          if (Array.isArray(data.detail)) message = data.detail.map(item => item.msg || 'Please check the request.').join(' ');
+          throw new Error(message);
+        }
+        if (typeof data.plan !== 'string' || !data.plan.trim()) throw new Error('The AI returned an empty plan. Please try again.');
+        actionPlanOutput.textContent = data.plan;
+        actionPlanStatus.textContent = 'Plan ready';
+        if (actionPlanTaskCount) {
+          const considered = Number(data.tasks_considered);
+          actionPlanTaskCount.textContent = `${Number.isFinite(considered) ? considered : 0} active task${considered === 1 ? '' : 's'} reviewed`;
+        }
+      } catch (error) {
+        console.error('AI Action Plan error:', error);
+        actionPlanOutput.textContent = error.message || 'The AI action plan is temporarily unavailable. Please try again.';
+        actionPlanStatus.textContent = 'Unavailable';
+      } finally {
+        actionPlanButton.disabled = false;
+        actionPlanButton.classList.remove('opacity-60', 'cursor-not-allowed');
+        actionPlanButton.innerHTML = originalButtonHTML;
+      }
+    }
+    if (actionPlanButton) actionPlanButton.addEventListener('click', refreshActionPlan);
+
+    // Real Gemini AI Focus Planner.
+    const aiForm = document.getElementById('ai-planner-form');
+    const aiGoalsInput = document.getElementById('ai-goals-input');
+    const aiTimeInput = document.getElementById('ai-time-available');
+    const aiPlanSubmitBtn = document.getElementById('ai-plan-submit-btn');
+    const aiPlanOutput = document.getElementById('ai-plan-output');
+    const aiPlanStatus = document.getElementById('ai-plan-status');
+
+    function parseAvailableTime(value) {
+  const input = value.trim().toLowerCase();
+
+  // Accept a plain number as minutes, e.g. "120"
+  if (/^\d+$/.test(input)) {
+    return Number(input);
+  }
+
+  let totalMinutes = 0;
+  let matched = false;
+
+  // Accept hours, e.g. "2 hours", "1 hour"
+  const hours = input.match(/(\d+)\s*(?:hours?|hrs?|h)\b/g) || [];
+
+  for (const part of hours) {
+    totalMinutes += Number(part.match(/\d+/)[0]) * 60;
+    matched = true;
+  }
+
+  // Accept minutes, e.g. "30 minutes", "30 mins"
+  const minutes = input.match(/(\d+)\s*(?:minutes?|mins?|m)\b/g) || [];
+
+  for (const part of minutes) {
+    totalMinutes += Number(part.match(/\d+/)[0]);
+    matched = true;
+  }
+
+  if (!matched) {
+    return null;
+  }
+
+  return totalMinutes;
+}
+
+    if (aiForm) {
+      aiForm.addEventListener('submit', async event => {
+        event.preventDefault();
+
+        const goal = aiGoalsInput.value.trim();
+
+        if (goal.length < 3) {
+          aiGoalsInput.setCustomValidity(
+            'Please enter a goal with at least 3 characters.'
+          );
+          aiGoalsInput.reportValidity();
+          aiGoalsInput.focus();
+          return;
+        }
+
+        aiGoalsInput.setCustomValidity('');
+
+        if (goal.length > 500) {
+          showTaskNotification(
+            'Your goal must be 500 characters or fewer.',
+            'error'
+          );
+          return;
+        }
+
+        let timeAvailable;
+
+        try {
+          timeAvailable = parseAvailableTime(aiTimeInput.value);
+
+          if (
+            timeAvailable !== null &&
+            (timeAvailable < 5 || timeAvailable > 1440)
+          ) {
+            throw new Error(
+              'Available time must be between 5 minutes and 24 hours.'
+            );
+          }
+        } catch (error) {
+          showTaskNotification(error.message, 'error');
+          aiTimeInput.focus();
+          return;
+        }
+
+        const originalButtonHTML = aiPlanSubmitBtn.innerHTML;
+
+        aiPlanSubmitBtn.disabled = true;
+        aiPlanSubmitBtn.classList.add(
+          'opacity-70',
+          'cursor-not-allowed'
+        );
+
+        aiPlanSubmitBtn.innerHTML =
+          '<span class="material-symbols-outlined text-[16px] animate-spin">refresh</span><span>Generating plan...</span>';
+
+        aiPlanStatus.textContent = 'Working...';
+
+        aiPlanOutput.textContent =
+          'Gemini is reviewing your goal and incomplete tasks. This may take a few seconds.';
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/ai/focus-plan`,
+            {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({
+                goal,
+                time_available: timeAvailable
+              })
+            }
+          );
+
+          const data = await response.json().catch(() => ({}));
+
+          if (response.status === 401) {
+            window.location.replace(
+              'http://127.0.0.1:5500/index.html'
+            );
+            return;
+          }
+
+          if (!response.ok) {
+            let message =
+              'Could not generate your plan. Please try again.';
+
+            if (typeof data.detail === 'string') {
+              message = data.detail;
+            } else if (Array.isArray(data.detail)) {
+              message = data.detail
+                .map(item => item.msg || 'Please check your input.')
+                .join(' ');
+            }
+
+            throw new Error(message);
+          }
+
+          if (
+            typeof data.plan !== 'string' ||
+            !data.plan.trim()
+          ) {
+            throw new Error(
+              'The AI returned an empty plan. Please try again.'
+            );
+          }
+
+          // Display AI output as text, never as executable HTML.
+          aiPlanOutput.textContent = data.plan;
+
+          aiPlanStatus.textContent =
+            `Generated · ${data.tasks_considered} active tasks reviewed`;
+
+        } catch (error) {
+          console.error('AI Focus Planner error:', error);
+
+          aiPlanOutput.textContent =
+            error.message ||
+            'The AI planner is temporarily unavailable. Please try again.';
+
+          aiPlanStatus.textContent = 'Unable to generate';
+
+        } finally {
+          aiPlanSubmitBtn.disabled = false;
+
+          aiPlanSubmitBtn.classList.remove(
+            'opacity-70',
+            'cursor-not-allowed'
+          );
+
+          aiPlanSubmitBtn.innerHTML = originalButtonHTML;
+        }
+      });
+    }
+
+    syncSearchInputWithView();
+    loadTasks();
+  });
+  </script>
+
+  <!-- Profile, Session Verification, and Logout -->
+  <script>
+    (async function verifyUserSession() {
+      const API_BASE = "http://127.0.0.1:8000/api/v1";
+
+      const profileWrap = document.getElementById("user-profile-wrap");
+      const profileTrigger = document.getElementById("user-profile-trigger");
+      const profileMenu = document.getElementById("user-profile-menu");
+      const logoutButton = document.getElementById("profile-logout-button");
+      const profileError = document.getElementById("profile-load-error");
+
+      function setProfileMenuOpen(isOpen) {
+        if (!profileMenu || !profileTrigger) return;
+
+        profileMenu.classList.toggle("hidden", !isOpen);
+        profileTrigger.setAttribute("aria-expanded", String(isOpen));
+      }
+
+      if (profileTrigger) {
+        profileTrigger.addEventListener("click", () => {
+          const isOpen = profileTrigger.getAttribute("aria-expanded") === "true";
+          setProfileMenuOpen(!isOpen);
+        });
+      }
+
+      document.addEventListener("click", event => {
+        if (profileWrap && !profileWrap.contains(event.target)) {
+          setProfileMenuOpen(false);
+        }
+      });
+
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") setProfileMenuOpen(false);
+      });
+
+      function formatAccountDate(dateString) {
+        if (!dateString) return "Not available";
+
+        const date = new Date(dateString);
+        if (Number.isNaN(date.getTime())) return "Not available";
+
+        return date.toLocaleDateString(undefined, {
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        });
+      }
+
+      function showProfileError(message) {
+        if (!profileError) return;
+
+        profileError.textContent = message;
+        profileError.classList.remove("hidden");
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/auth/me`, {
+          method: "GET",
+          credentials: "include",
+          headers: { "Accept": "application/json" }
+        });
+
+        if (response.status === 401) {
+          window.location.replace("http://127.0.0.1:5500/index.html");
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(`Could not load your account (HTTP ${response.status}).`);
+        }
+
+        const user = await response.json();
+        const fullName = (user.full_name || "").trim() || "User";
+        const firstName = fullName.split(/\s+/)[0];
+        const email = user.email || "Email unavailable";
+
+        const initials = fullName
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map(part => part[0].toUpperCase())
+          .join("");
+
+        const displayNameElement = document.getElementById("user-display-name");
+        const welcomeNameElement = document.getElementById("welcome-username");
+        const initialsElement = document.getElementById("user-initials");
+        const profileNameElement = document.getElementById("profile-menu-name");
+        const profileEmailElement = document.getElementById("profile-menu-email");
+        const profileInitialsElement = document.getElementById("profile-menu-initials");
+        const profileCreatedElement = document.getElementById("profile-created-date");
+
+        if (displayNameElement) displayNameElement.textContent = fullName;
+        if (welcomeNameElement) welcomeNameElement.textContent = firstName;
+        if (initialsElement) initialsElement.textContent = initials || "U";
+        if (profileNameElement) profileNameElement.textContent = fullName;
+        if (profileEmailElement) profileEmailElement.textContent = email;
+        if (profileInitialsElement) profileInitialsElement.textContent = initials || "U";
+
+        if (profileCreatedElement) {
+          profileCreatedElement.textContent = formatAccountDate(user.created_at);
+        }
+
+      } catch (error) {
+        console.error("Could not verify the FocusFlow session:", error);
+        showProfileError("Could not load your profile. Check that the backend is running, then refresh.");
+      }
+
+      if (logoutButton) {
+        logoutButton.addEventListener("click", async () => {
+          const originalButtonHTML = logoutButton.innerHTML;
+
+          logoutButton.disabled = true;
+          logoutButton.classList.add("opacity-60", "cursor-not-allowed");
+          logoutButton.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span><span>Logging out...</span>';
+
+          if (profileError) {
+            profileError.classList.add("hidden");
+            profileError.textContent = "";
+          }
+
+          try {
+            const response = await fetch(`${API_BASE}/auth/logout`, {
+              method: "POST",
+              credentials: "include",
+              headers: { "Accept": "application/json" }
+            });
+
+            if (!response.ok) {
+              throw new Error(`Logout failed (HTTP ${response.status}). Please try again.`);
+            }
+
+            window.location.replace("http://127.0.0.1:5500/index.html");
+
+          } catch (error) {
+            console.error("Could not log out:", error);
+
+            showProfileError(error.message || "Could not log out. Check your connection and try again.");
+
+            logoutButton.disabled = false;
+            logoutButton.classList.remove("opacity-60", "cursor-not-allowed");
+            logoutButton.innerHTML = originalButtonHTML;
+          }
+        });
+      }
+    })();
+  </script>
+
+</body>
+</html>
