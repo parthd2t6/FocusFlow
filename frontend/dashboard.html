@@ -29,6 +29,11 @@
       animation: notification-in 180ms ease-out;
     }
 
+    /* Productivity analytics are displayed on productivity.html, not on the dashboard. */
+    section[aria-labelledby="productivity-overview-title"] {
+      display: none !important;
+    }
+
     @keyframes notification-in {
       from { opacity: 0; transform: translateY(-6px); }
       to { opacity: 1; transform: translateY(0); }
@@ -53,6 +58,11 @@
             <a href="#dashboard" class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-900 bg-slate-100/90 transition flex items-center gap-1.5">
               <span class="material-symbols-outlined text-[18px]">dashboard</span>
               Dashboard
+            </a>
+
+            <a href="#my-tasks" class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[18px]">check_circle</span>
+              My Tasks
             </a>
 
             <a href="productivity.html" class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition flex items-center gap-1.5">
@@ -223,6 +233,72 @@
           <p class="mt-3 text-xs text-slate-500 flex items-center gap-1">Review overdue tasks <span class="material-symbols-outlined text-[15px]">arrow_forward</span></p>
         </button>
 
+      </div>
+    </section>
+
+    <!-- AI-first Productivity Workspace: live task analytics + Gemini next actions -->
+    <section aria-labelledby="productivity-overview-title" class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">Your workspace</p>
+          <h2 id="productivity-overview-title" class="mt-1 text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Productivity Overview</h2>
+          <p class="mt-1 text-sm text-slate-500">Understand your workload, then let Gemini help you choose the next step.</p>
+        </div>
+        <span class="inline-flex items-center gap-2 text-xs text-slate-500"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Based on your saved tasks</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+        <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <article class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm min-w-0">
+            <div class="flex items-start justify-between gap-3">
+              <div><h3 class="text-sm font-semibold text-slate-900">Completion progress</h3><p class="mt-1 text-xs text-slate-500">Finished tasks out of your full task list</p></div>
+              <span class="p-2 rounded-lg bg-emerald-50 text-emerald-700"><span class="material-symbols-outlined">donut_large</span></span>
+            </div>
+            <div class="mt-5 flex items-center gap-4">
+              <div class="relative w-28 h-28 shrink-0" role="img" aria-label="Task completion chart">
+                <svg viewBox="0 0 120 120" class="w-full h-full -rotate-90" aria-hidden="true">
+                  <circle cx="60" cy="60" r="44" fill="none" stroke="#e2e8f0" stroke-width="12"></circle>
+                  <circle id="productivity-completion-ring" cx="60" cy="60" r="44" fill="none" stroke="#059669" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 276.46" class="transition-all duration-500"></circle>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center"><span id="productivity-completion-rate" class="text-2xl font-bold text-slate-900">0%</span><span class="text-[10px] uppercase tracking-wider text-slate-500">complete</span></div>
+              </div>
+              <div class="min-w-0 flex-1 space-y-3">
+                <div><p class="text-xs text-slate-500">Completed</p><p id="productivity-completed-count" class="mt-0.5 text-lg font-semibold text-slate-900">0</p></div>
+                <div><p class="text-xs text-slate-500">Still open</p><p id="productivity-open-count" class="mt-0.5 text-lg font-semibold text-slate-900">0</p></div>
+                <p id="productivity-completion-caption" class="text-xs leading-relaxed text-slate-500">Your progress will appear when your tasks load.</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm min-w-0">
+            <div class="flex items-start justify-between gap-3">
+              <div><h3 class="text-sm font-semibold text-slate-900">Active priorities</h3><p class="mt-1 text-xs text-slate-500">Where your unfinished work sits</p></div>
+              <span class="p-2 rounded-lg bg-slate-100 text-slate-700"><span class="material-symbols-outlined">low_priority</span></span>
+            </div>
+            <div class="mt-6 space-y-5">
+              <div><div class="flex items-center justify-between mb-2"><span class="text-xs font-medium text-slate-700">High</span><span id="priority-high-count" class="text-xs font-semibold text-slate-900">0</span></div><div class="h-2.5 rounded-full bg-slate-100 overflow-hidden"><div id="priority-high-bar" class="h-full rounded-full bg-rose-500 transition-all duration-300" style="width:0%"></div></div></div>
+              <div><div class="flex items-center justify-between mb-2"><span class="text-xs font-medium text-slate-700">Medium</span><span id="priority-medium-count" class="text-xs font-semibold text-slate-900">0</span></div><div class="h-2.5 rounded-full bg-slate-100 overflow-hidden"><div id="priority-medium-bar" class="h-full rounded-full bg-amber-400 transition-all duration-300" style="width:0%"></div></div></div>
+              <div><div class="flex items-center justify-between mb-2"><span class="text-xs font-medium text-slate-700">Low</span><span id="priority-low-count" class="text-xs font-semibold text-slate-900">0</span></div><div class="h-2.5 rounded-full bg-slate-100 overflow-hidden"><div id="priority-low-bar" class="h-full rounded-full bg-slate-400 transition-all duration-300" style="width:0%"></div></div></div>
+            </div>
+            <p id="priority-chart-caption" class="mt-5 text-xs leading-relaxed text-slate-500">Priority distribution will update from your active tasks.</p>
+          </article>
+        </div>
+
+        <article class="relative overflow-hidden rounded-2xl bg-slate-900 text-white p-5 sm:p-6 shadow-sm flex flex-col min-w-0">
+          <div class="absolute -right-12 -top-12 w-40 h-40 rounded-full border border-white/10"></div>
+          <div class="absolute -right-5 -top-5 w-24 h-24 rounded-full border border-white/10"></div>
+          <div class="relative flex items-start justify-between gap-3">
+            <div><div class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-blue-200 mb-2"><span class="material-symbols-outlined text-[16px]">auto_awesome</span> Gemini AI</div><h3 class="text-lg font-semibold tracking-tight">Your next best actions</h3></div>
+            <span class="shrink-0 rounded-md border border-white/15 bg-white/10 px-2 py-1 text-[10px] font-semibold text-blue-100">AI PLAN</span>
+          </div>
+          <p class="relative mt-2 text-xs leading-relaxed text-slate-300">Get a practical order for your unfinished tasks, based on urgency and priority.</p>
+          <div class="relative mt-4 flex-1 min-h-[160px] rounded-xl border border-white/10 bg-white/[0.06] p-4">
+            <div class="flex items-center justify-between gap-2 mb-3"><span class="text-[10px] font-semibold uppercase tracking-wider text-slate-300">Recommended focus</span><span id="action-plan-status" class="text-[11px] text-blue-200">Preparing</span></div>
+            <div id="action-plan-output" class="text-sm leading-relaxed text-slate-100 whitespace-pre-wrap break-words" role="status" aria-live="polite">Gemini will review your saved tasks and suggest where to start.</div>
+          </div>
+          <div class="relative mt-4 flex items-center justify-between gap-3"><p id="action-plan-task-count" class="text-[11px] text-slate-400">Uses your saved tasks</p><button type="button" id="refresh-action-plan-btn" class="shrink-0 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white text-slate-900 text-xs font-semibold hover:bg-blue-50 disabled:opacity-60 disabled:cursor-not-allowed transition focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900"><span class="material-symbols-outlined text-[16px]">refresh</span><span>Refresh plan</span></button></div>
+          <p class="relative mt-3 text-[11px] leading-relaxed text-slate-400">Suggestions are advisory. Gemini never changes or completes tasks automatically.</p>
+        </article>
       </div>
     </section>
 
@@ -456,7 +532,7 @@
   <!-- Main Dashboard JavaScript -->
   <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const API_BASE = 'http://127.0.0.1:8000/api/v1';
+    const API_BASE = 'https://focusflow-db.onrender.com/api/v1';
 
     const modal = document.getElementById('add-task-modal');
     const openBtn = document.getElementById('open-add-task-btn');
@@ -1597,7 +1673,7 @@
   <!-- Profile, Session Verification, and Logout -->
   <script>
     (async function verifyUserSession() {
-      const API_BASE = "http://127.0.0.1:8000/api/v1";
+      const API_BASE = "https://focusflow-db.onrender.com/api/v1";
 
       const profileWrap = document.getElementById("user-profile-wrap");
       const profileTrigger = document.getElementById("user-profile-trigger");

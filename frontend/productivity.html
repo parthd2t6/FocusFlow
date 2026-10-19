@@ -1,134 +1,317 @@
-
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FocusFlow — Productivity Overview</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
   <style>
-    body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }
-    * { box-sizing: border-box; }
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
   </style>
 </head>
+
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+
   <header class="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
     <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
       <a href="dashboard.html" class="flex shrink-0 items-center gap-2.5" aria-label="FocusFlow dashboard">
         <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-xs font-bold tracking-wider text-white">FF</span>
         <span class="text-base font-semibold tracking-tight">FocusFlow</span>
       </a>
+
       <nav class="flex items-center gap-2 sm:gap-3" aria-label="Main navigation">
         <a href="dashboard.html" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900">
-          <span class="material-symbols-outlined text-[18px]">arrow_back</span><span class="hidden sm:inline">Back to Dashboard</span><span class="sm:hidden">Dashboard</span>
+          <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+          <span class="hidden sm:inline">Back to Dashboard</span>
+          <span class="sm:hidden">Dashboard</span>
         </a>
-        <span class="hidden rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-900 md:inline-flex md:items-center md:gap-1.5"><span class="material-symbols-outlined text-[18px]">monitoring</span> Productivity</span>
+
+        <span class="hidden rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-900 md:inline-flex md:items-center md:gap-1.5">
+          <span class="material-symbols-outlined text-[18px]">monitoring</span>
+          Productivity
+        </span>
       </nav>
     </div>
   </header>
 
   <main class="mx-auto w-full max-w-7xl space-y-7 px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
+
     <section class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <p class="text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">Your workspace</p>
         <h1 class="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Productivity Overview</h1>
-        <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">See how your work is progressing and use Gemini to decide what deserves your attention next.</p>
+        <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+          See how your work is progressing and use Gemini to decide what deserves your attention next.
+        </p>
       </div>
+
       <button id="reload-data-btn" type="button" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60">
-        <span class="material-symbols-outlined text-[18px]">refresh</span> Refresh data
+        <span class="material-symbols-outlined text-[18px]">refresh</span>
+        Refresh data
       </button>
     </section>
 
     <div id="page-message" class="hidden rounded-xl border px-4 py-3 text-sm" role="status" aria-live="polite"></div>
 
     <section class="grid grid-cols-1 gap-4 sm:grid-cols-3" aria-label="Task summary">
+
       <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div class="flex items-center justify-between gap-3"><p class="text-sm font-medium text-slate-500">Total tasks</p><span class="rounded-lg bg-slate-100 p-2 text-slate-700"><span class="material-symbols-outlined">checklist</span></span></div>
-        <p id="summary-total" class="mt-4 text-3xl font-bold tracking-tight">—</p><p class="mt-1 text-xs text-slate-500">All saved tasks</p>
+        <div class="flex items-center justify-between gap-3">
+          <p class="text-sm font-medium text-slate-500">Total tasks</p>
+          <span class="rounded-lg bg-slate-100 p-2 text-slate-700">
+            <span class="material-symbols-outlined">checklist</span>
+          </span>
+        </div>
+        <p id="summary-total" class="mt-4 text-3xl font-bold tracking-tight">—</p>
+        <p class="mt-1 text-xs text-slate-500">All saved tasks</p>
       </article>
+
       <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div class="flex items-center justify-between gap-3"><p class="text-sm font-medium text-slate-500">Completed</p><span class="rounded-lg bg-emerald-50 p-2 text-emerald-700"><span class="material-symbols-outlined">task_alt</span></span></div>
-        <p id="summary-completed" class="mt-4 text-3xl font-bold tracking-tight">—</p><p class="mt-1 text-xs text-slate-500">Tasks marked complete</p>
+        <div class="flex items-center justify-between gap-3">
+          <p class="text-sm font-medium text-slate-500">Completed</p>
+          <span class="rounded-lg bg-emerald-50 p-2 text-emerald-700">
+            <span class="material-symbols-outlined">task_alt</span>
+          </span>
+        </div>
+        <p id="summary-completed" class="mt-4 text-3xl font-bold tracking-tight">—</p>
+        <p class="mt-1 text-xs text-slate-500">Tasks marked complete</p>
       </article>
+
       <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div class="flex items-center justify-between gap-3"><p class="text-sm font-medium text-slate-500">Overdue</p><span class="rounded-lg bg-rose-50 p-2 text-rose-700"><span class="material-symbols-outlined">schedule</span></span></div>
-        <p id="summary-overdue" class="mt-4 text-3xl font-bold tracking-tight text-rose-700">—</p><p class="mt-1 text-xs text-slate-500">Unfinished tasks past their due date</p>
+        <div class="flex items-center justify-between gap-3">
+          <p class="text-sm font-medium text-slate-500">Overdue</p>
+          <span class="rounded-lg bg-rose-50 p-2 text-rose-700">
+            <span class="material-symbols-outlined">schedule</span>
+          </span>
+        </div>
+        <p id="summary-overdue" class="mt-4 text-3xl font-bold tracking-tight text-rose-700">—</p>
+        <p class="mt-1 text-xs text-slate-500">Unfinished tasks past their due date</p>
       </article>
+
     </section>
 
     <section class="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-3" aria-label="Productivity analytics">
+
       <article class="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-1">
-        <div class="flex items-start justify-between gap-3"><div><h2 class="text-base font-semibold">Completion progress</h2><p class="mt-1 text-xs leading-5 text-slate-500">Completed tasks compared with your full task list.</p></div><span class="rounded-lg bg-emerald-50 p-2 text-emerald-700"><span class="material-symbols-outlined">donut_large</span></span></div>
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h2 class="text-base font-semibold">Completion progress</h2>
+            <p class="mt-1 text-xs leading-5 text-slate-500">Completed tasks compared with your full task list.</p>
+          </div>
+          <span class="rounded-lg bg-emerald-50 p-2 text-emerald-700">
+            <span class="material-symbols-outlined">donut_large</span>
+          </span>
+        </div>
+
         <div class="mt-6 flex flex-col items-center gap-5 sm:flex-row sm:items-center lg:flex-col xl:flex-row">
           <div class="relative h-36 w-36 shrink-0" role="img" aria-label="Task completion percentage">
-            <svg viewBox="0 0 120 120" class="h-full w-full -rotate-90" aria-hidden="true"><circle cx="60" cy="60" r="46" fill="none" stroke="#e2e8f0" stroke-width="11"></circle><circle id="completion-ring" cx="60" cy="60" r="46" fill="none" stroke="#059669" stroke-width="11" stroke-linecap="round" stroke-dasharray="0 289.03" class="transition-all duration-500"></circle></svg>
-            <div class="absolute inset-0 flex flex-col items-center justify-center"><span id="completion-rate" class="text-2xl font-bold">0%</span><span class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">complete</span></div>
+            <svg viewBox="0 0 120 120" class="h-full w-full -rotate-90" aria-hidden="true">
+              <circle cx="60" cy="60" r="46" fill="none" stroke="#e2e8f0" stroke-width="11"></circle>
+              <circle id="completion-ring" cx="60" cy="60" r="46" fill="none" stroke="#059669" stroke-width="11" stroke-linecap="round" stroke-dasharray="0 289.03" class="transition-all duration-500"></circle>
+            </svg>
+
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span id="completion-rate" class="text-2xl font-bold">0%</span>
+              <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">complete</span>
+            </div>
           </div>
+
           <div class="min-w-0 flex-1 space-y-3 self-stretch">
-            <div class="flex items-center justify-between gap-3"><span class="text-sm text-slate-600">Completed</span><strong id="completed-count" class="text-sm">0</strong></div>
-            <div class="flex items-center justify-between gap-3"><span class="text-sm text-slate-600">Still open</span><strong id="open-count" class="text-sm">0</strong></div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-sm text-slate-600">Completed</span>
+              <strong id="completed-count" class="text-sm">0</strong>
+            </div>
+
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-sm text-slate-600">Still open</span>
+              <strong id="open-count" class="text-sm">0</strong>
+            </div>
+
             <p id="completion-caption" class="pt-1 text-xs leading-5 text-slate-500">Loading your task progress…</p>
           </div>
         </div>
       </article>
 
       <article class="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-1">
-        <div class="flex items-start justify-between gap-3"><div><h2 class="text-base font-semibold">Active priorities</h2><p class="mt-1 text-xs leading-5 text-slate-500">Distribution across unfinished tasks.</p></div><span class="rounded-lg bg-amber-50 p-2 text-amber-700"><span class="material-symbols-outlined">low_priority</span></span></div>
-        <div class="mt-7 space-y-6">
-          <div><div class="mb-2 flex items-center justify-between"><span class="text-sm font-medium text-slate-700">High priority</span><span id="priority-high-count" class="text-sm font-semibold">0</span></div><div class="h-2.5 overflow-hidden rounded-full bg-slate-100"><div id="priority-high-bar" class="h-full rounded-full bg-rose-500 transition-all duration-300" style="width:0%"></div></div></div>
-          <div><div class="mb-2 flex items-center justify-between"><span class="text-sm font-medium text-slate-700">Medium priority</span><span id="priority-medium-count" class="text-sm font-semibold">0</span></div><div class="h-2.5 overflow-hidden rounded-full bg-slate-100"><div id="priority-medium-bar" class="h-full rounded-full bg-amber-400 transition-all duration-300" style="width:0%"></div></div></div>
-          <div><div class="mb-2 flex items-center justify-between"><span class="text-sm font-medium text-slate-700">Low priority</span><span id="priority-low-count" class="text-sm font-semibold">0</span></div><div class="h-2.5 overflow-hidden rounded-full bg-slate-100"><div id="priority-low-bar" class="h-full rounded-full bg-slate-400 transition-all duration-300" style="width:0%"></div></div></div>
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h2 class="text-base font-semibold">Active priorities</h2>
+            <p class="mt-1 text-xs leading-5 text-slate-500">Distribution across unfinished tasks.</p>
+          </div>
+          <span class="rounded-lg bg-amber-50 p-2 text-amber-700">
+            <span class="material-symbols-outlined">low_priority</span>
+          </span>
         </div>
+
+        <div class="mt-7 space-y-6">
+          <div>
+            <div class="mb-2 flex items-center justify-between">
+              <span class="text-sm font-medium text-slate-700">High priority</span>
+              <span id="priority-high-count" class="text-sm font-semibold">0</span>
+            </div>
+            <div class="h-2.5 overflow-hidden rounded-full bg-slate-100">
+              <div id="priority-high-bar" class="h-full rounded-full bg-rose-500 transition-all duration-300" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="mb-2 flex items-center justify-between">
+              <span class="text-sm font-medium text-slate-700">Medium priority</span>
+              <span id="priority-medium-count" class="text-sm font-semibold">0</span>
+            </div>
+            <div class="h-2.5 overflow-hidden rounded-full bg-slate-100">
+              <div id="priority-medium-bar" class="h-full rounded-full bg-amber-400 transition-all duration-300" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="mb-2 flex items-center justify-between">
+              <span class="text-sm font-medium text-slate-700">Low priority</span>
+              <span id="priority-low-count" class="text-sm font-semibold">0</span>
+            </div>
+            <div class="h-2.5 overflow-hidden rounded-full bg-slate-100">
+              <div id="priority-low-bar" class="h-full rounded-full bg-slate-400 transition-all duration-300" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
         <p id="priority-caption" class="mt-6 text-xs leading-5 text-slate-500">Priority data will appear after your tasks load.</p>
       </article>
 
       <article class="flex min-w-0 flex-col rounded-2xl bg-slate-900 p-5 text-white shadow-sm lg:col-span-1">
-        <div class="flex items-start gap-3"><span class="rounded-lg bg-white/10 p-2 text-blue-200"><span class="material-symbols-outlined">assistant</span></span><div><p class="text-xs font-semibold uppercase tracking-wider text-blue-200">Suggested next step</p><h2 id="next-action-title" class="mt-1 text-lg font-semibold tracking-tight">Loading your tasks</h2></div></div>
-        <p id="next-action-description" class="mt-4 flex-1 text-sm leading-6 text-slate-300">We’ll look at your actual due dates and priorities, then explain why one task may be the best place to start.</p>
-        <div class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4"><span id="next-action-meta" class="text-xs text-slate-400">Based on your saved tasks</span><a href="dashboard.html" class="inline-flex items-center gap-1 text-sm font-semibold text-white transition hover:text-blue-200">Open tasks <span class="material-symbols-outlined text-[17px]">arrow_forward</span></a></div>
+        <div class="flex items-start gap-3">
+          <span class="rounded-lg bg-white/10 p-2 text-blue-200">
+            <span class="material-symbols-outlined">assistant</span>
+          </span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-blue-200">Suggested next step</p>
+            <h2 id="next-action-title" class="mt-1 text-lg font-semibold tracking-tight">Loading your tasks</h2>
+          </div>
+        </div>
+
+        <p id="next-action-description" class="mt-4 flex-1 text-sm leading-6 text-slate-300">
+          We’ll look at your actual due dates and priorities, then explain why one task may be the best place to start.
+        </p>
+
+        <div class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+          <span id="next-action-meta" class="text-xs text-slate-400">Based on your saved tasks</span>
+          <a href="dashboard.html" class="inline-flex items-center gap-1 text-sm font-semibold text-white transition hover:text-blue-200">
+            Open tasks
+            <span class="material-symbols-outlined text-[17px]">arrow_forward</span>
+          </a>
+        </div>
       </article>
+
     </section>
 
     <section class="grid grid-cols-1 gap-5 lg:grid-cols-5" aria-label="AI focus planner">
+
       <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:col-span-2">
-        <div class="flex items-start gap-3"><span class="rounded-lg bg-blue-50 p-2 text-blue-700"><span class="material-symbols-outlined">auto_awesome</span></span><div><h2 class="text-lg font-semibold tracking-tight">Build an AI focus plan</h2><p class="mt-1 text-sm leading-5 text-slate-500">Tell Gemini what you want to accomplish. It will consider your incomplete saved tasks.</p></div></div>
+        <div class="flex items-start gap-3">
+          <span class="rounded-lg bg-blue-50 p-2 text-blue-700">
+            <span class="material-symbols-outlined">auto_awesome</span>
+          </span>
+          <div>
+            <h2 class="text-lg font-semibold tracking-tight">Build an AI focus plan</h2>
+            <p class="mt-1 text-sm leading-5 text-slate-500">Tell Gemini what you want to accomplish. It will consider your incomplete saved tasks.</p>
+          </div>
+        </div>
+
         <form id="focus-plan-form" class="mt-5 space-y-4">
-          <div><label for="focus-goal" class="mb-1.5 block text-sm font-medium text-slate-700">What do you want to focus on?</label><textarea id="focus-goal" name="goal" rows="4" maxlength="500" required minlength="3" placeholder="Example: Finish my most urgent work before studying." class="w-full resize-y rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm leading-6 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200"></textarea><p class="mt-1 text-xs text-slate-500">3–500 characters</p></div>
-          <div><label for="focus-time" class="mb-1.5 block text-sm font-medium text-slate-700">Time available <span class="font-normal text-slate-400">(optional)</span></label><input id="focus-time" name="time" type="number" min="5" max="1440" step="5" placeholder="e.g. 90 minutes" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200" /><p class="mt-1 text-xs text-slate-500">Enter minutes, from 5 to 1,440.</p></div>
-          <button id="generate-plan-btn" type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"><span class="material-symbols-outlined text-[18px]">auto_awesome</span> Generate focus plan</button>
+          <div>
+            <label for="focus-goal" class="mb-1.5 block text-sm font-medium text-slate-700">What do you want to focus on?</label>
+            <textarea id="focus-goal" name="goal" rows="4" maxlength="500" required minlength="3" placeholder="Example: Finish my most urgent work before studying." class="w-full resize-y rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm leading-6 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200"></textarea>
+            <p class="mt-1 text-xs text-slate-500">3–500 characters</p>
+          </div>
+
+          <div>
+            <label for="focus-time" class="mb-1.5 block text-sm font-medium text-slate-700">Time available <span class="font-normal text-slate-400">(optional)</span></label>
+            <input id="focus-time" name="time" type="number" min="5" max="1440" step="5" placeholder="e.g. 90 minutes" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200" />
+            <p class="mt-1 text-xs text-slate-500">Enter minutes, from 5 to 1,440.</p>
+          </div>
+
+          <button id="generate-plan-btn" type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">
+            <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+            Generate focus plan
+          </button>
         </form>
       </article>
+
       <article class="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:col-span-3">
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between"><div><p class="text-xs font-semibold uppercase tracking-wider text-blue-700">Gemini AI</p><h2 class="mt-1 text-lg font-semibold tracking-tight">Your focus plan</h2><p class="mt-1 text-sm text-slate-500">Your generated plan appears here. Nothing is changed automatically.</p></div><span id="plan-status" class="inline-flex w-fit items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">Waiting for your goal</span></div>
-        <div id="plan-output" class="mt-5 min-h-56 whitespace-pre-wrap break-words rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700" role="status" aria-live="polite">Write a goal and choose “Generate focus plan”. Gemini will use your goal, available time, and your saved unfinished tasks to suggest a plan.</div>
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-blue-700">Gemini AI</p>
+            <h2 class="mt-1 text-lg font-semibold tracking-tight">Your focus plan</h2>
+            <p class="mt-1 text-sm text-slate-500">Your generated plan appears here. Nothing is changed automatically.</p>
+          </div>
+
+          <span id="plan-status" class="inline-flex w-fit items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+            Waiting for your goal
+          </span>
+        </div>
+
+        <div id="plan-output" class="mt-5 min-h-56 whitespace-pre-wrap break-words rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700" role="status" aria-live="polite">
+          Write a goal and choose “Generate focus plan”. Gemini will use your goal, available time, and your saved unfinished tasks to suggest a plan.
+        </div>
+
         <p id="plan-task-count" class="mt-3 text-xs text-slate-500">Your tasks stay unchanged unless you edit them from the dashboard.</p>
       </article>
+
     </section>
 
-    <footer class="flex flex-col items-start justify-between gap-3 border-t border-slate-200 pt-5 text-xs text-slate-500 sm:flex-row sm:items-center"><p>FocusFlow · Productivity Overview</p><a href="dashboard.html" class="inline-flex items-center gap-1.5 font-semibold text-slate-700 hover:text-slate-900"><span class="material-symbols-outlined text-[17px]">arrow_back</span> Return to dashboard</a></footer>
+    <footer class="flex flex-col items-start justify-between gap-3 border-t border-slate-200 pt-5 text-xs text-slate-500 sm:flex-row sm:items-center">
+      <p>FocusFlow · Productivity Overview</p>
+      <a href="dashboard.html" class="inline-flex items-center gap-1.5 font-semibold text-slate-700 hover:text-slate-900">
+        <span class="material-symbols-outlined text-[17px]">arrow_back</span>
+        Return to dashboard
+      </a>
+    </footer>
+
   </main>
 
   <script>
-    const API_BASE = 'http://127.0.0.1:8000/api/v1';
+    // Production backend URL
+    const API_BASE = 'https://focusflow-db.onrender.com/api/v1';
+
     let allTasks = [];
+
     const $ = id => document.getElementById(id);
 
     function todayString() {
       const now = new Date();
+
       return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     }
 
     function showMessage(message, type = 'info') {
       const element = $('page-message');
+
       element.textContent = message;
       element.className = 'rounded-xl border px-4 py-3 text-sm';
-      if (type === 'error') element.classList.add('border-rose-200', 'bg-rose-50', 'text-rose-800');
-      else element.classList.add('border-blue-200', 'bg-blue-50', 'text-blue-800');
+
+      if (type === 'error') {
+        element.classList.add('border-rose-200', 'bg-rose-50', 'text-rose-800');
+      } else {
+        element.classList.add('border-blue-200', 'bg-blue-50', 'text-blue-800');
+      }
+
       element.classList.remove('hidden');
     }
 
@@ -136,7 +319,9 @@
       return {
         ...task,
         completed: Boolean(task.completed),
-        priority: ['High', 'Medium', 'Low'].includes(task.priority) ? task.priority : 'Medium'
+        priority: ['High', 'Medium', 'Low'].includes(task.priority)
+          ? task.priority
+          : 'Medium'
       };
     }
 
@@ -144,69 +329,126 @@
       const total = allTasks.length;
       const completed = allTasks.filter(task => task.completed).length;
       const openTasks = allTasks.filter(task => !task.completed);
-      const overdueTasks = openTasks.filter(task => task.due_date && task.due_date < todayString());
+
+      const overdueTasks = openTasks.filter(
+        task => task.due_date && task.due_date.slice(0, 10) < todayString()
+      );
+
       const rate = total ? Math.round(completed / total * 100) : 0;
       const circumference = 2 * Math.PI * 46;
 
       $('summary-total').textContent = total;
       $('summary-completed').textContent = completed;
       $('summary-overdue').textContent = overdueTasks.length;
-      $('completion-ring').setAttribute('stroke-dasharray', `${rate / 100 * circumference} ${circumference}`);
+
+      $('completion-ring').setAttribute(
+        'stroke-dasharray',
+        `${rate / 100 * circumference} ${circumference}`
+      );
+
       $('completion-rate').textContent = `${rate}%`;
       $('completed-count').textContent = completed;
       $('open-count').textContent = openTasks.length;
-      $('completion-caption').textContent = total === 0 ? 'Add your first task from the dashboard to begin tracking progress.' : completed === total ? 'Every saved task is complete. Great work!' : `${openTasks.length} unfinished task${openTasks.length === 1 ? '' : 's'} remain.`;
+
+      $('completion-caption').textContent =
+        total === 0
+          ? 'Add your first task from the dashboard to begin tracking progress.'
+          : completed === total
+            ? 'Every saved task is complete. Great work!'
+            : `${openTasks.length} unfinished task${openTasks.length === 1 ? '' : 's'} remain.`;
 
       const priorities = {
         High: openTasks.filter(task => task.priority === 'High').length,
         Medium: openTasks.filter(task => task.priority === 'Medium').length,
         Low: openTasks.filter(task => task.priority === 'Low').length
       };
+
       const activeTotal = openTasks.length;
-      [['High', 'priority-high-count', 'priority-high-bar'], ['Medium', 'priority-medium-count', 'priority-medium-bar'], ['Low', 'priority-low-count', 'priority-low-bar']].forEach(([priority, countId, barId]) => {
+
+      [
+        ['High', 'priority-high-count', 'priority-high-bar'],
+        ['Medium', 'priority-medium-count', 'priority-medium-bar'],
+        ['Low', 'priority-low-count', 'priority-low-bar']
+      ].forEach(([priority, countId, barId]) => {
         $(countId).textContent = priorities[priority];
-        $(barId).style.width = `${activeTotal ? priorities[priority] / activeTotal * 100 : 0}%`;
+
+        $(barId).style.width =
+          `${activeTotal ? priorities[priority] / activeTotal * 100 : 0}%`;
       });
-      $('priority-caption').textContent = activeTotal ? `${activeTotal} unfinished task${activeTotal === 1 ? '' : 's'} counted in this breakdown.` : 'No unfinished tasks. Add work from your dashboard to see priority distribution.';
+
+      $('priority-caption').textContent = activeTotal
+        ? `${activeTotal} unfinished task${activeTotal === 1 ? '' : 's'} counted in this breakdown.`
+        : 'No unfinished tasks. Add work from your dashboard to see priority distribution.';
 
       const today = todayString();
+
       const dateOffset = dateString => {
         if (!dateString) return null;
-        const parsed = new Date(`${dateString.slice(0, 10)}T00:00:00`);
+
+        const normalizedDate = String(dateString).slice(0, 10);
+        const parsed = new Date(`${normalizedDate}T00:00:00`);
+
         if (Number.isNaN(parsed.getTime())) return null;
+
         const startOfToday = new Date(`${today}T00:00:00`);
+
         return Math.round((parsed - startOfToday) / 86400000);
       };
+
       const urgencyScore = task => {
         const daysUntilDue = dateOffset(task.due_date);
+
         if (daysUntilDue !== null && daysUntilDue < 0) return 0;
         if (daysUntilDue === 0) return 1;
         if (daysUntilDue !== null && daysUntilDue <= 3) return 2;
         if (task.priority === 'High') return 3;
         if (daysUntilDue !== null) return 4;
         if (task.priority === 'Medium') return 5;
+
         return 6;
       };
+
       const candidate = [...openTasks].sort((a, b) => {
         const scoreDifference = urgencyScore(a) - urgencyScore(b);
+
         if (scoreDifference !== 0) return scoreDifference;
-        const priorityRank = { High: 0, Medium: 1, Low: 2 };
-        if (priorityRank[a.priority] !== priorityRank[b.priority]) return priorityRank[a.priority] - priorityRank[b.priority];
-        if (a.due_date && b.due_date && a.due_date !== b.due_date) return a.due_date.localeCompare(b.due_date);
+
+        const priorityRank = {
+          High: 0,
+          Medium: 1,
+          Low: 2
+        };
+
+        if (priorityRank[a.priority] !== priorityRank[b.priority]) {
+          return priorityRank[a.priority] - priorityRank[b.priority];
+        }
+
+        if (a.due_date && b.due_date && a.due_date !== b.due_date) {
+          return a.due_date.localeCompare(b.due_date);
+        }
+
         if (a.due_date && !b.due_date) return -1;
         if (!a.due_date && b.due_date) return 1;
+
         return 0;
       })[0];
 
       if (!candidate) {
-        $('next-action-title').textContent = total ? 'You are all caught up' : 'Add your first task';
+        $('next-action-title').textContent =
+          total ? 'You are all caught up' : 'Add your first task';
+
         $('next-action-description').textContent = total
           ? 'You have no unfinished tasks right now. You can take a break or add your next task from the dashboard.'
           : 'Add a task from your dashboard first. Once it has a priority or due date, this section can help you choose what to tackle.';
-        $('next-action-meta').textContent = total ? 'No unfinished tasks' : 'Waiting for your first task';
+
+        $('next-action-meta').textContent =
+          total ? 'No unfinished tasks' : 'Waiting for your first task';
+
       } else {
         const daysUntilDue = dateOffset(candidate.due_date);
+
         let reason;
+
         if (daysUntilDue !== null && daysUntilDue < 0) {
           reason = `This task is overdue by ${Math.abs(daysUntilDue)} day${Math.abs(daysUntilDue) === 1 ? '' : 's'}.`;
         } else if (daysUntilDue === 0) {
@@ -216,35 +458,76 @@
         } else if (candidate.priority === 'High') {
           reason = 'You marked this task as high priority, so it is a strong candidate to tackle next.';
         } else if (candidate.due_date) {
-          reason = `Its due date is ${candidate.due_date}. Check your workload now so it does not become urgent.`;
+          reason = `Its due date is ${String(candidate.due_date).slice(0, 10)}. Check your workload now so it does not become urgent.`;
         } else {
           reason = `${candidate.priority} priority, with no due date set. Consider giving it a deadline if it matters this week.`;
         }
+
         $('next-action-title').textContent = candidate.title || 'Untitled task';
-        $('next-action-description').textContent = `${reason} Start with a manageable first step, then reassess your workload.`;
-        $('next-action-meta').textContent = `${candidate.priority} priority${candidate.due_date ? ` · Due ${candidate.due_date}` : ' · No due date'}`;
+
+        $('next-action-description').textContent =
+          `${reason} Start with a manageable first step, then reassess your workload.`;
+
+        $('next-action-meta').textContent =
+          `${candidate.priority} priority${candidate.due_date ? ` · Due ${String(candidate.due_date).slice(0, 10)}` : ' · No due date'}`;
       }
     }
 
     async function loadTasks() {
-      $('reload-data-btn').disabled = true;
+      const reloadButton = $('reload-data-btn');
+
+      reloadButton.disabled = true;
+
       try {
-        const response = await fetch(`${API_BASE}/tasks`, { method: 'GET', credentials: 'include', headers: { 'Accept': 'application/json' } });
-        if (response.status === 401) { window.location.replace('index.html'); return; }
+        const response = await fetch(`${API_BASE}/tasks`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.status === 401) {
+          window.location.replace('index.html');
+          return;
+        }
+
         const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : 'Could not load your saved tasks.');
+
+        if (!response.ok) {
+          throw new Error(
+            typeof data.detail === 'string'
+              ? data.detail
+              : 'Could not load your saved tasks.'
+          );
+        }
+
         const tasks = Array.isArray(data) ? data : data.tasks;
-        if (!Array.isArray(tasks)) throw new Error('The task API returned an unexpected response format.');
+
+        if (!Array.isArray(tasks)) {
+          throw new Error('The task API returned an unexpected response format.');
+        }
+
         allTasks = tasks.map(normalizeTask);
+
         renderOverview();
         $('page-message').classList.add('hidden');
+
       } catch (error) {
         console.error('Productivity overview task loading failed:', error);
-        showMessage(`${error.message} Check that the FastAPI server is running, then refresh.`, 'error');
+
+        showMessage(
+          `${error.message} Check your internet connection and backend configuration, then refresh.`,
+          'error'
+        );
+
         $('next-action-title').textContent = 'Could not load tasks';
-        $('next-action-description').textContent = 'The overview needs your saved tasks from the backend. Check the server and try refreshing this page.';
+
+        $('next-action-description').textContent =
+          'The overview needs your saved tasks from the backend. Check the server and try refreshing this page.';
+
       } finally {
-        $('reload-data-btn').disabled = false;
+        reloadButton.disabled = false;
       }
     }
 
@@ -252,70 +535,154 @@
 
     $('focus-plan-form').addEventListener('submit', async event => {
       event.preventDefault();
+
       const goal = $('focus-goal').value.trim();
       const timeText = $('focus-time').value.trim();
+
       if (goal.length < 3 || goal.length > 500) {
         showMessage('Your goal must be between 3 and 500 characters.', 'error');
         $('focus-goal').focus();
         return;
       }
+
       let timeAvailable = null;
+
       if (timeText) {
         timeAvailable = Number(timeText);
-        if (!Number.isInteger(timeAvailable) || timeAvailable < 5 || timeAvailable > 1440) {
-          showMessage('Time available must be a whole number between 5 and 1,440 minutes.', 'error');
+
+        if (
+          !Number.isInteger(timeAvailable) ||
+          timeAvailable < 5 ||
+          timeAvailable > 1440
+        ) {
+          showMessage(
+            'Time available must be a whole number between 5 and 1,440 minutes.',
+            'error'
+          );
+
           $('focus-time').focus();
           return;
         }
       }
+
       const button = $('generate-plan-btn');
+
       button.disabled = true;
-      button.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">refresh</span> Generating plan…';
+
+      button.innerHTML =
+        '<span class="material-symbols-outlined animate-spin text-[18px]">refresh</span> Generating plan…';
+
       $('plan-status').textContent = 'Gemini is working';
-      $('plan-status').className = 'inline-flex w-fit items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700';
-      $('plan-output').textContent = 'Gemini is reviewing your goal and incomplete saved tasks. This may take a few seconds.';
+
+      $('plan-status').className =
+        'inline-flex w-fit items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700';
+
+      $('plan-output').textContent =
+        'Gemini is reviewing your goal and incomplete saved tasks. This may take a few seconds.';
+
       try {
         const response = await fetch(`${API_BASE}/ai/focus-plan`, {
-          method: 'POST', credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ goal, time_available: timeAvailable })
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            goal,
+            time_available: timeAvailable
+          })
         });
+
         const data = await response.json().catch(() => ({}));
-        if (response.status === 401) { window.location.replace('index.html'); return; }
-        if (!response.ok) {
-          const detail = Array.isArray(data.detail) ? data.detail.map(item => item.msg || 'Check your input.').join(' ') : data.detail;
-          throw new Error(typeof detail === 'string' ? detail : 'Could not generate a focus plan. Please try again.');
+
+        if (response.status === 401) {
+          window.location.replace('index.html');
+          return;
         }
-        if (typeof data.plan !== 'string' || !data.plan.trim()) throw new Error('Gemini returned an empty plan. Please try again.');
+
+        if (!response.ok) {
+          const detail = Array.isArray(data.detail)
+            ? data.detail.map(item => item.msg || 'Check your input.').join(' ')
+            : data.detail;
+
+          throw new Error(
+            typeof detail === 'string'
+              ? detail
+              : 'Could not generate a focus plan. Please try again.'
+          );
+        }
+
+        if (typeof data.plan !== 'string' || !data.plan.trim()) {
+          throw new Error('Gemini returned an empty plan. Please try again.');
+        }
+
         $('plan-output').textContent = data.plan;
+
         $('plan-status').textContent = 'Plan generated';
-        $('plan-status').className = 'inline-flex w-fit items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700';
-        $('plan-task-count').textContent = `Gemini considered ${Number(data.tasks_considered) || 0} incomplete task(s). Your tasks have not been changed.`;
+
+        $('plan-status').className =
+          'inline-flex w-fit items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700';
+
+        $('plan-task-count').textContent =
+          `Gemini considered ${Number(data.tasks_considered) || 0} incomplete task(s). Your tasks have not been changed.`;
+
         $('page-message').classList.add('hidden');
+
       } catch (error) {
         console.error('Focus plan request failed:', error);
-        $('plan-output').textContent = error.message || 'The AI planner is temporarily unavailable. Please try again.';
+
+        $('plan-output').textContent =
+          error.message || 'The AI planner is temporarily unavailable. Please try again.';
+
         $('plan-status').textContent = 'Could not generate';
-        $('plan-status').className = 'inline-flex w-fit items-center rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700';
+
+        $('plan-status').className =
+          'inline-flex w-fit items-center rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700';
+
       } finally {
         button.disabled = false;
-        button.innerHTML = '<span class="material-symbols-outlined text-[18px]">auto_awesome</span> Generate focus plan';
+
+        button.innerHTML =
+          '<span class="material-symbols-outlined text-[18px]">auto_awesome</span> Generate focus plan';
       }
     });
 
-    (async function verifySessionAndLoad() {
+    async function verifySessionAndLoad() {
       try {
-        const response = await fetch(`${API_BASE}/auth/me`, { method: 'GET', credentials: 'include', headers: { 'Accept': 'application/json' } });
-        if (response.status === 401) { window.location.replace('index.html'); return; }
-        if (!response.ok) throw new Error('Could not verify your login session.');
+        const response = await fetch(`${API_BASE}/auth/me`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.status === 401) {
+          window.location.replace('index.html');
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error('Could not verify your login session.');
+        }
+
         await response.json();
         await loadTasks();
+
       } catch (error) {
         console.error('Session verification failed:', error);
-        showMessage('Could not verify your login session. Make sure the FastAPI backend is running, then refresh this page.', 'error');
+
+        showMessage(
+          'Could not verify your login session. Check your backend CORS and session-cookie settings, then refresh this page.',
+          'error'
+        );
       }
-    })();
+    }
+
+    verifySessionAndLoad();
   </script>
+
 </body>
 </html>
-
+```
