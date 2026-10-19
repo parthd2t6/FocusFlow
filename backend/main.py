@@ -1,3 +1,4 @@
+
 from fastapi.middleware.cors import CORSMiddleware
 from google import genai
 import json
@@ -10,7 +11,6 @@ from typing import Literal
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException, status, Request
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -34,25 +34,15 @@ if not session_secret:
 
 
 # --------------------------------------------------
-# FastAPI application
+# FastAPI application and CORS
 # --------------------------------------------------
 
 app = FastAPI(title="FocusFlow API")
-
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://focusflow000.netlify.app",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
         "http://127.0.0.1:5500",
         "http://localhost:5500",
     ],
@@ -141,6 +131,7 @@ def get_authenticated_user(request: Request, db: Session) -> User:
 def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
     full_name = user_data.full_name.strip()
     email = str(user_data.email).lower()
+
     if not full_name:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -160,6 +151,7 @@ def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
         password_hash=password_hasher.hash(user_data.password),
     )
     db.add(new_user)
+
     try:
         db.commit()
         db.refresh(new_user)
@@ -191,6 +183,7 @@ def login_user(
 ):
     email = str(login_data.email).lower()
     user = db.query(User).filter(User.email == email).first()
+
     if user is None or not password_hasher.verify(
         login_data.password, user.password_hash
     ):
@@ -200,6 +193,7 @@ def login_user(
         )
 
     request.session["user_id"] = user.id
+
     return {
         "message": "Login successful",
         "user": {
@@ -218,6 +212,7 @@ def login_user(
 @app.get("/api/v1/auth/me")
 def get_current_user(request: Request, db: Session = Depends(get_db)):
     user = get_authenticated_user(request, db)
+
     return {
         "id": user.id,
         "full_name": user.full_name,
@@ -268,6 +263,7 @@ def create_task(
 ):
     user = get_authenticated_user(request, db)
     title = task_data.title.strip()
+
     if not title:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -286,6 +282,7 @@ def create_task(
     db.add(new_task)
     db.commit()
     db.refresh(new_task)
+
     return task_to_dict(new_task)
 
 
@@ -297,12 +294,14 @@ def create_task(
 @app.get("/api/v1/tasks")
 def get_tasks(request: Request, db: Session = Depends(get_db)):
     user = get_authenticated_user(request, db)
+
     tasks = (
         db.query(TaskModel)
         .filter(TaskModel.user_id == user.id)
         .order_by(TaskModel.created_at.desc())
         .all()
     )
+
     return {"tasks": [task_to_dict(task) for task in tasks]}
 
 
@@ -319,11 +318,13 @@ def update_task_completion(
     db: Session = Depends(get_db),
 ):
     user = get_authenticated_user(request, db)
+
     task = (
         db.query(TaskModel)
         .filter(TaskModel.id == task_id, TaskModel.user_id == user.id)
         .first()
     )
+
     if task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -334,8 +335,13 @@ def update_task_completion(
     task.completed_at = datetime.now(timezone.utc) if task.completed else None
     db.commit()
     db.refresh(task)
+
     return {
-        "message": "Task completed successfully." if task.completed else "Task reopened successfully.",
+        "message": (
+            "Task completed successfully."
+            if task.completed
+            else "Task reopened successfully."
+        ),
         "task": task_to_dict(task),
     }
 
@@ -346,8 +352,13 @@ def update_task_completion(
 
 def get_gemini_client() -> genai.Client:
     api_key = os.getenv("GEMINI_API_KEY")
+
     if not api_key:
-        raise HTTPException(status_code=503, detail="AI service is not configured.")
+        raise HTTPException(
+            status_code=503,
+            detail="AI service is not configured.",
+        )
+
     return genai.Client(api_key=api_key)
 
 
@@ -359,24 +370,28 @@ def normalize_task_title(value: str) -> str:
     return value
 
 
-def find_task_duplicate(title: str, existing_tasks: list[TaskModel]) -> tuple[str, TaskModel] | None:
+def find_task_duplicate(
+    title: str,
+    existing_tasks: list[TaskModel],
+) -> tuple[str, TaskModel] | None:
     candidate = normalize_task_title(title)
+
     if not candidate:
         return None
 
-    # Exact normalized matches are blocked in the UI, so users cannot accidentally
-    # add the same task twice with different capitalization or punctuation.
     for task in existing_tasks:
         if candidate == normalize_task_title(task.title):
             return ("exact_duplicate", task)
 
-    # Similar-but-not-identical titles are flagged for the user to review.
     for task in existing_tasks:
         existing = normalize_task_title(task.title)
+
         if min(len(candidate), len(existing)) >= 10:
             ratio = SequenceMatcher(None, candidate, existing).ratio()
+
             if ratio >= 0.86:
                 return ("possible_duplicate", task)
+
     return None
 
 
@@ -385,16 +400,21 @@ def parse_ai_json(text: str) -> dict:
     cleaned = (text or "").strip()
     cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.IGNORECASE)
     cleaned = re.sub(r"\s*```$", "", cleaned)
+
     try:
         result = json.loads(cleaned)
     except json.JSONDecodeError:
         start = cleaned.find("{")
         end = cleaned.rfind("}")
+
         if start < 0 or end <= start:
             raise ValueError("Gemini did not return valid JSON.")
+
         result = json.loads(cleaned[start:end + 1])
+
     if not isinstance(result, dict):
         raise ValueError("Gemini returned an unexpected response format.")
+
     return result
 
 
@@ -414,11 +434,15 @@ def create_focus_plan(
 
     active_tasks = (
         db.query(TaskModel)
-        .filter(TaskModel.user_id == user.id, TaskModel.completed.is_(False))
+        .filter(
+            TaskModel.user_id == user.id,
+            TaskModel.completed.is_(False),
+        )
         .order_by(TaskModel.due_date.asc())
         .limit(50)
         .all()
     )
+
     task_details = [
         {
             "title": task.title,
@@ -428,7 +452,13 @@ def create_focus_plan(
         }
         for task in active_tasks
     ]
-    available_time = f"{payload.time_available} minutes" if payload.time_available is not None else "Not specified"
+
+    available_time = (
+        f"{payload.time_available} minutes"
+        if payload.time_available is not None
+        else "Not specified"
+    )
+
     prompt = f"""
 You are the AI Focus Planner inside FocusFlow, a productivity app.
 Create a practical, realistic plan for the user's work session.
@@ -444,21 +474,32 @@ Instructions:
 - Do not claim to create, edit, complete, or reprioritize any task.
 - Be concise and return readable plain text with headings and a numbered plan.
 """
+
     try:
         response = client.models.generate_content(
             model="gemini-3.5-flash-lite",
             contents=prompt,
         )
         plan = (response.text or "").strip()
+
         if not plan:
-            raise HTTPException(status_code=502, detail="The AI returned an empty plan. Please try again.")
+            raise HTTPException(
+                status_code=502,
+                detail="The AI returned an empty plan. Please try again.",
+            )
+
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=502, detail="The AI planner is temporarily unavailable. Please try again.")
+        raise HTTPException(
+            status_code=502,
+            detail="The AI planner is temporarily unavailable. Please try again.",
+        )
 
-    # This endpoint only reads tasks and returns text; it never writes to the database.
-    return {"plan": plan, "tasks_considered": len(active_tasks)}
+    return {
+        "plan": plan,
+        "tasks_considered": len(active_tasks),
+    }
 
 
 # --------------------------------------------------
@@ -475,19 +516,27 @@ def create_ai_task_suggestions(
     user = get_authenticated_user(request, db)
     client = get_gemini_client()
 
-    # Only this user's tasks are included in the prompt or duplicate checks.
     existing_tasks = (
         db.query(TaskModel)
         .filter(TaskModel.user_id == user.id)
         .order_by(TaskModel.created_at.desc())
         .all()
     )
-    # Keep the prompt compact while duplicate detection still checks every task.
+
     existing_task_details = [
-        {"title": task.title, "description": task.description or "", "completed": bool(task.completed)}
+        {
+            "title": task.title,
+            "description": task.description or "",
+            "completed": bool(task.completed),
+        }
         for task in existing_tasks[:200]
     ]
-    available_time = f"{payload.time_available} minutes" if payload.time_available is not None else "Not specified"
+
+    available_time = (
+        f"{payload.time_available} minutes"
+        if payload.time_available is not None
+        else "Not specified"
+    )
 
     prompt = f"""
 You create task suggestions for FocusFlow. You MUST NOT save or modify tasks.
@@ -513,10 +562,13 @@ Rules:
             contents=prompt,
             config={"response_mime_type": "application/json"},
         )
+
         parsed = parse_ai_json(response.text or "")
         raw_suggestions = parsed.get("suggestions", [])
+
         if not isinstance(raw_suggestions, list):
             raise ValueError("The suggestions field must be a list.")
+
     except Exception:
         raise HTTPException(
             status_code=502,
@@ -525,29 +577,43 @@ Rules:
 
     suggestions = []
     seen_titles: set[str] = set()
+
     for item in raw_suggestions[:5]:
         if not isinstance(item, dict):
             continue
+
         title = str(item.get("title", "")).strip()
         description = str(item.get("description", "")).strip()
+
         if not title or len(title) > 200:
             continue
+
         if len(description) > 5000:
             description = description[:5000]
+
         normalized = normalize_task_title(title)
+
         if not normalized or normalized in seen_titles:
             continue
+
         seen_titles.add(normalized)
 
         priority_value = item.get("priority", "Medium")
-        priority = priority_value if priority_value in ("Low", "Medium", "High") else "Medium"
+        priority = (
+            priority_value
+            if priority_value in ("Low", "Medium", "High")
+            else "Medium"
+        )
+
         try:
             estimated_minutes = int(item.get("estimated_minutes", 30))
         except (TypeError, ValueError):
             estimated_minutes = 30
+
         estimated_minutes = max(5, min(1440, estimated_minutes))
 
         duplicate_match = find_task_duplicate(title, existing_tasks)
+
         if duplicate_match:
             duplicate_status, duplicate = duplicate_match
             duplicate_of_id = duplicate.id
@@ -567,5 +633,7 @@ Rules:
             "duplicate_of_title": duplicate_of_title,
         })
 
-    # Suggestions are not saved here. Only POST /api/v1/tasks saves after the user clicks Add.
-    return {"suggestions": suggestions, "existing_tasks_checked": len(existing_tasks)}
+    return {
+        "suggestions": suggestions,
+        "existing_tasks_checked": len(existing_tasks),
+    }
