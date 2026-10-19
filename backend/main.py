@@ -1,3 +1,4 @@
+from fastapi.middleware.cors import CORSMiddleware
 from google import genai
 import json
 import os
@@ -42,8 +43,6 @@ app = FastAPI(title="FocusFlow API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://127.0.0.1:5500",
-        "http://localhost:5500",
         "https://focusflow000.netlify.app",
     ],
     allow_credentials=True,
