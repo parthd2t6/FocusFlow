@@ -1060,7 +1060,7 @@
           const data = await response.json().catch(() => ({}));
 
           if (response.status === 401) {
-            window.location.replace('http://127.0.0.1:5500/index.html');
+            window.location.replace('https://focusflow000.netlify.app/index.html');
             return;
           }
 
@@ -1270,7 +1270,7 @@
         });
 
         if (response.status === 401) {
-          window.location.replace('http://127.0.0.1:5500/index.html');
+          window.location.replace('https://focusflow000.netlify.app/index.html');
           return;
         }
 
@@ -1347,7 +1347,7 @@
         const data = await response.json().catch(() => ({}));
 
         if (response.status === 401) {
-          window.location.replace('http://127.0.0.1:5500/index.html');
+          window.location.replace('https://focusflow000.netlify.app/index.html');
           return;
         }
 
@@ -1460,7 +1460,7 @@
           })
         });
         const data = await response.json().catch(() => ({}));
-        if (response.status === 401) { window.location.replace('http://127.0.0.1:5500/index.html'); return; }
+        if (response.status === 401) { window.location.replace('https://focusflow000.netlify.app/index.html'); return; }
         if (!response.ok) {
           let message = typeof data.detail === 'string' ? data.detail : 'Could not generate an action plan. Please try again.';
           if (Array.isArray(data.detail)) message = data.detail.map(item => item.msg || 'Please check the request.').join(' ');
@@ -1608,7 +1608,7 @@
 
           if (response.status === 401) {
             window.location.replace(
-              'http://127.0.0.1:5500/index.html'
+              'https://focusflow000.netlify.app/index.html'
             );
             return;
           }
@@ -1733,7 +1733,7 @@
         });
 
         if (response.status === 401) {
-          window.location.replace("http://127.0.0.1:5500/index.html");
+          window.location.replace("https://focusflow000.netlify.app/index.html");
           return;
         }
 
@@ -1801,7 +1801,7 @@
               throw new Error(`Logout failed (HTTP ${response.status}). Please try again.`);
             }
 
-            window.location.replace("http://127.0.0.1:5500/index.html");
+            window.location.replace("https://focusflow000.netlify.app/index.html");
 
           } catch (error) {
             console.error("Could not log out:", error);
