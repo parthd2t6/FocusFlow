@@ -1,4 +1,3 @@
-
 from fastapi.middleware.cors import CORSMiddleware
 from google import genai
 import json
@@ -34,11 +33,23 @@ if not session_secret:
 
 
 # --------------------------------------------------
-# FastAPI application and CORS
+# FastAPI application, sessions, and CORS
 # --------------------------------------------------
 
 app = FastAPI(title="FocusFlow API")
 
+# SessionMiddleware is required because authentication uses request.session.
+# same_site="none" and https_only=True allow the session cookie to be sent
+# from the Netlify frontend to the Render backend over HTTPS.
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=session_secret,
+    same_site="none",
+    https_only=True,
+)
+
+# Keep CORS as the outermost user middleware so CORS headers are included
+# in responses, including many error responses.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
