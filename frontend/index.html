@@ -1,12 +1,13 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-  <meta content="web_blank" name="shell-type" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="shell-type" content="web_blank" />
 
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -64,14 +65,12 @@
             "on-tertiary-fixed": "#271902",
             "error-container": "#ffdad6"
           },
-
           borderRadius: {
             "DEFAULT": "0.125rem",
             "lg": "0.25rem",
             "xl": "0.5rem",
             "full": "0.75rem"
           },
-
           spacing: {
             "margin": "1rem",
             "gutter-lg": "1.5rem",
@@ -85,7 +84,6 @@
             "margin-lg": "2rem",
             "margin-md": "1.5rem"
           },
-
           fontFamily: {
             "label-sm": ["Inter"],
             "body-md": ["Inter"],
@@ -99,7 +97,6 @@
             "headline-md": ["Inter"],
             "code-sm": ["JetBrains Mono"]
           },
-
           fontSize: {
             "label-sm": ["11px", {
               lineHeight: "16px",
@@ -220,13 +217,12 @@
 
         <!-- Login form -->
         <form
-          action="/api/v1/auth/login"
+          action="https://focusflow-db.onrender.com/api/v1/auth/login"
           class="flex flex-col gap-space-lg"
           id="login-form"
           method="POST"
           novalidate
         >
-
           <div
             aria-live="polite"
             class="hidden rounded-lg p-space-sm font-body-sm text-body-sm"
@@ -293,7 +289,7 @@
             >Password is required.</span>
           </div>
 
-          <!-- Remember me: separate row -->
+          <!-- Remember me -->
           <div class="flex items-center justify-start pt-0.5">
             <label class="flex items-center gap-2 cursor-pointer select-none">
               <input
@@ -309,7 +305,7 @@
             </label>
           </div>
 
-          <!-- Full-width Sign In button -->
+          <!-- Sign In -->
           <button
             class="w-full h-11 px-4 bg-primary-container hover:bg-primary active:bg-primary text-on-primary font-label-md text-label-md rounded-lg transition shadow-sm flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             id="submit-btn"
@@ -322,7 +318,6 @@
               id="btn-spinner"
             ></span>
           </button>
-
         </form>
 
         <!-- Link to signup -->
@@ -332,7 +327,7 @@
 
             <a
               class="font-label-md text-label-md text-primary hover:underline ml-1"
-              href="http://127.0.0.1:5500/signup.html"
+              href="/signup.html"
             >Sign up</a>
           </p>
         </div>
@@ -352,6 +347,8 @@
 
   <script>
     (function () {
+      const API_BASE_URL = 'https://focusflow-db.onrender.com';
+
       const passwordInput = document.getElementById('password');
       const togglePasswordBtn = document.getElementById('toggle-password');
       const eyeIcon = document.getElementById('eye-icon');
@@ -371,21 +368,16 @@
         togglePasswordBtn.addEventListener('click', function (event) {
           event.preventDefault();
 
-          const isPassword =
-            passwordInput.getAttribute('type') === 'password';
+          const isPassword = passwordInput.getAttribute('type') === 'password';
 
-          passwordInput.setAttribute(
-            'type',
-            isPassword ? 'text' : 'password'
-          );
+          passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
 
           togglePasswordBtn.setAttribute(
             'aria-label',
             isPassword ? 'Hide password' : 'Show password'
           );
 
-          eyeIcon.textContent =
-            isPassword ? 'visibility_off' : 'visibility';
+          eyeIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
         });
       }
 
@@ -435,7 +427,7 @@
 
           try {
             const response = await fetch(
-              'http://127.0.0.1:8000/api/v1/auth/login',
+              `${API_BASE_URL}/api/v1/auth/login`,
               {
                 method: 'POST',
                 credentials: 'include',
@@ -455,7 +447,7 @@
             if (response.ok) {
               // Verify the login session before redirecting.
               const sessionResponse = await fetch(
-                'http://127.0.0.1:8000/api/v1/auth/me',
+                `${API_BASE_URL}/api/v1/auth/me`,
                 {
                   method: 'GET',
                   credentials: 'include',
@@ -472,10 +464,7 @@
                 feedbackBox.className =
                   'rounded-lg p-space-sm font-body-sm text-body-sm bg-surface-container text-on-surface block';
 
-                window.location.replace(
-                  'http://127.0.0.1:5500/dashboard.html'
-                );
-
+                window.location.replace('/dashboard.html');
                 return;
               }
 
@@ -500,7 +489,7 @@
             console.error('Login error:', error);
 
             feedbackBox.textContent =
-              'Connection error. Please verify that the backend server is running.';
+              'Connection error. Please verify your internet connection and try again.';
 
             feedbackBox.className =
               'rounded-lg p-space-sm font-body-sm text-body-sm bg-error-container text-on-error-container block';
@@ -514,7 +503,7 @@
           }
         });
 
-        // Clear email validation error when the user edits the field
+        // Clear email validation error when edited
         emailInput.addEventListener('input', () => {
           if (!emailError.classList.contains('hidden')) {
             emailError.classList.add('hidden');
@@ -522,7 +511,7 @@
           }
         });
 
-        // Clear password validation error when the user edits the field
+        // Clear password validation error when edited
         passwordInput.addEventListener('input', () => {
           if (!passwordError.classList.contains('hidden')) {
             passwordError.classList.add('hidden');
@@ -535,3 +524,4 @@
 
 </body>
 </html>
+```
